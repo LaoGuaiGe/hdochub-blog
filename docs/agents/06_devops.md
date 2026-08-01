@@ -151,6 +151,7 @@
 
 | 项目 | 内容 |
 |------|------|
+| 环境初始化（Windows） | 右键管理员运行 `setup-windows.bat`，自动检查 Node.js/WSL2/Docker |
 | 启动脚本（Mac/Linux） | `./start-dev.sh` |
 | 启动脚本（Windows） | 双击 `start-dev.bat` |
 | 前置条件 | 安装 Docker Desktop + Node.js 18+ |
@@ -158,6 +159,7 @@
 | 访问地址 | http://localhost:3000 |
 | 后台地址 | http://localhost:3000/admin |
 | 管理员账号 | admin / Admin@123456 |
+| Windows 坑点 | Docker Desktop 依赖 WSL2，安装 Docker 后必须先 `wsl --install` 再重启，否则 docker ps 报 `failed to connect to the docker daemon` |
 
 ### 域名现状
 
