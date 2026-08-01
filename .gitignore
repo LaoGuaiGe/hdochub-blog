@@ -36,3 +36,6 @@ prisma/migrations/
 # Runtime uploads (用户上传的文件，不是源代码)
 /src/server/uploads/
 !/src/server/src/modules/uploads/
+
+# 本地启动标记文件
+.setup-done
