@@ -1,0 +1,235 @@
+// hdochub 个人技术博客 - Prisma Schema
+// 依据 database-design.md 编写
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户表 ====================
+model User {
+  id              BigInt    @id @default(autoincrement())
+  username        String    @unique @db.VarChar(20)
+  email           String    @unique @db.VarChar(100)
+  password        String    @db.VarChar(100)
+  nickname        String?   @db.VarChar(20)
+  avatar          String?   @db.VarChar(255)
+  bio             String?   @db.VarChar(200)
+  role            String    @default("USER") @db.VarChar(20)
+  status          String    @default("ACTIVE") @db.VarChar(20)
+  articleCount    Int       @default(0) @map("article_count")
+  commentCount    Int       @default(0) @map("comment_count")
+  loginFailCount  Int       @default(0) @map("login_fail_count")
+  lockedUntil     DateTime? @map("locked_until")
+  lastLoginAt     DateTime? @map("last_login_at")
+  lastLoginIp     String?   @db.VarChar(45) @map("last_login_ip")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  articles        Article[]
+  comments        Comment[]
+  likes           Like[]
+  uploadedFiles   UploadFile[]
+  revisions       ArticleRevision[]
+  replyToComments Comment[] @relation("CommentReplyTo")
+
+  @@index([role, status], map: "idx_role_status")
+  @@index([createdAt], map: "idx_user_created_at")
+  @@map("users")
+}
+
+// ==================== 分类表 ====================
+model Category {
+  id            BigInt    @id @default(autoincrement())
+  name          String    @unique @db.VarChar(20)
+  slug          String    @unique @db.VarChar(50)
+  description   String?   @db.VarChar(200)
+  sort          Int       @default(0)
+  articleCount  Int       @default(0) @map("article_count")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  articles      Article[]
+
+  @@index([sort], map: "idx_category_sort")
+  @@map("categories")
+}
+
+// ==================== 标签表 ====================
+model Tag {
+  id            BigInt    @id @default(autoincrement())
+  name          String    @unique @db.VarChar(20)
+  slug          String    @unique @db.VarChar(50)
+  articleCount  Int       @default(0) @map("article_count")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  articles      ArticleTag[]
+
+  @@map("tags")
+}
+
+// ==================== 文章表 ====================
+model Article {
+  id            BigInt    @id @default(autoincrement())
+  title         String    @db.VarChar(100)
+  slug          String    @unique @db.VarChar(150)
+  content       String    @db.LongText
+  contentHtml   String?   @db.LongText @map("content_html")
+  summary       String?   @db.VarChar(500)
+  coverImage    String?   @db.VarChar(255) @map("cover_image")
+  authorId      BigInt    @map("author_id")
+  categoryId    BigInt    @map("category_id")
+  status        String    @default("DRAFT") @db.VarChar(20)
+  viewCount     Int       @default(0) @map("view_count")
+  likeCount     Int       @default(0) @map("like_count")
+  commentCount  Int       @default(0) @map("comment_count")
+  wordCount     Int       @default(0) @map("word_count")
+  isTop         Int       @default(0) @map("is_top") @db.TinyInt
+  publishedAt   DateTime? @map("published_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category      Category  @relation(fields: [categoryId], references: [id])
+  tags          ArticleTag[]
+  comments      Comment[]
+  likes         Like[]
+  revisions     ArticleRevision[]
+
+  @@index([status, publishedAt], map: "idx_status_published")
+  @@index([authorId, status], map: "idx_author_status")
+  @@index([categoryId, status, publishedAt], map: "idx_category_status")
+  @@index([viewCount], map: "idx_view_count")
+  @@index([publishedAt], map: "idx_published_at")
+  @@map("articles")
+}
+
+// ==================== 文章-标签关联表 ====================
+model ArticleTag {
+  id          BigInt   @id @default(autoincrement())
+  articleId   BigInt   @map("article_id")
+  tagId       BigInt   @map("tag_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag         Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, tagId], map: "uk_article_tag")
+  @@index([tagId], map: "idx_article_tag_tag_id")
+  @@map("article_tags")
+}
+
+// ==================== 评论表 ====================
+model Comment {
+  id              BigInt    @id @default(autoincrement())
+  articleId       BigInt    @map("article_id")
+  userId          BigInt    @map("user_id")
+  parentId        BigInt?   @map("parent_id")
+  replyToUserId   BigInt?   @map("reply_to_user_id")
+  content         String    @db.VarChar(500)
+  contentHtml     String?   @db.Text @map("content_html")
+  floor           Int       @default(0)
+  depth           Int       @default(0) @db.UnsignedTinyInt
+  status          String    @default("PUBLISHED") @db.VarChar(20)
+  likeCount       Int       @default(0) @map("like_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  article         Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies         Comment[] @relation("CommentReplies")
+  replyToUser     User?     @relation("CommentReplyTo", fields: [replyToUserId], references: [id], onDelete: SetNull)
+
+  @@index([articleId, status, createdAt], map: "idx_article_status_created")
+  @@index([userId], map: "idx_comment_user_id")
+  @@index([parentId], map: "idx_comment_parent_id")
+  @@index([status, createdAt], map: "idx_comment_status_created")
+  @@map("comments")
+}
+
+// ==================== 点赞表 ====================
+model Like {
+  id          BigInt   @id @default(autoincrement())
+  articleId   BigInt   @map("article_id")
+  userId      BigInt   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId], map: "uk_article_user")
+  @@index([userId], map: "idx_like_user_id")
+  @@map("likes")
+}
+
+// ==================== 友链表 ====================
+model FriendLink {
+  id          BigInt   @id @default(autoincrement())
+  name        String   @db.VarChar(50)
+  url         String   @db.VarChar(255)
+  description String?  @db.VarChar(200)
+  logo        String?  @db.VarChar(255)
+  sort        Int      @default(0)
+  status      String   @default("VISIBLE") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([status, sort], map: "idx_friend_status_sort")
+  @@map("friend_links")
+}
+
+// ==================== 站点设置表 ====================
+model Setting {
+  id          BigInt   @id @default(autoincrement())
+  key         String   @unique @db.VarChar(50)
+  value       String?  @db.Text
+  description String?  @db.VarChar(200)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+// ==================== 文章修订历史表 ====================
+model ArticleRevision {
+  id              BigInt   @id @default(autoincrement())
+  articleId       BigInt   @map("article_id")
+  title           String   @db.VarChar(100)
+  content         String   @db.LongText
+  revisionNumber  Int      @map("revision_number")
+  editorId        BigInt?  @map("editor_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  editor          User?    @relation(fields: [editorId], references: [id], onDelete: SetNull)
+
+  @@index([articleId, revisionNumber], map: "idx_article_revision")
+  @@map("article_revisions")
+}
+
+// ==================== 上传文件记录表 ====================
+model UploadFile {
+  id            BigInt   @id @default(autoincrement())
+  userId        BigInt   @map("user_id")
+  originalName  String   @db.VarChar(255) @map("original_name")
+  storedName    String   @db.VarChar(255) @map("stored_name")
+  filePath      String   @db.VarChar(500) @map("file_path")
+  fileUrl       String   @db.VarChar(500) @map("file_url")
+  fileSize      Int      @map("file_size")
+  mimeType      String   @db.VarChar(50) @map("mime_type")
+  width         Int?
+  height        Int?
+  purpose       String?  @db.VarChar(20)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_upload_user_id")
+  @@index([purpose], map: "idx_upload_purpose")
+  @@map("upload_files")
+}
