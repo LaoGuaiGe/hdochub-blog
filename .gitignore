@@ -33,5 +33,6 @@ yarn-error.log*
 # Prisma
 prisma/migrations/
 
-# Runtime
-uploads/
+# Runtime uploads (用户上传的文件，不是源代码)
+/src/server/uploads/
+!/src/server/src/modules/uploads/

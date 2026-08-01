@@ -25,11 +25,11 @@ const { data, pending, refresh } = await useAsyncData(
   { watch: [page, sort, categoryFilter, tagFilter] }
 )
 
-const { data: categories } = await useAsyncData('home-categories', () => categoryApi.list())
-const { data: tags } = await useAsyncData('home-tags', () => tagApi.list())
+const { data: categories } = await useAsyncData('home-categories', () => categoryApi.list(), { default: () => [] })
+const { data: tags } = await useAsyncData('home-tags', () => tagApi.list(), { default: () => [] })
 const { data: hotArticles } = await useAsyncData('home-hot', () =>
   articleApi.list({ page: 1, pageSize: 5, sort: 'views', status: 'PUBLISHED' })
-)
+, { default: () => ({ list: [], pagination: { total: 0, page: 1, pageSize: 5, totalPages: 0 } }) })
 
 const articles = computed(() => data.value?.list || [])
 const total = computed(() => data.value?.pagination.total || 0)

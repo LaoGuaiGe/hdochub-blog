@@ -12,5 +12,10 @@
 
 <script setup lang="ts">
 const { initAuth } = useAuth()
-await initAuth()
+// 后端不可用时不阻塞页面渲染
+try {
+  await initAuth()
+} catch {
+  // 忽略初始化错误，页面使用默认状态渲染
+}
 </script>
