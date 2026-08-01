@@ -110,8 +110,12 @@
 | 仓库地址 | https://github.com/LaoGuaiGe/hdochub-blog |
 | 主分支 | main |
 | 仓库类型 | GitHub 公开仓库 |
-| 推送方式 | 使用 Personal Access Token 认证（token 由甲方提供，使用后已从 remote URL 中清除） |
-| Git 配置注意 | 推送时使用 `git push origin main`，如遇远程有不同历史，使用 `--allow-unrelated-histories` 合并 |
+| 推送方式 | 使用 Personal Access Token 认证 |
+| Token 存放位置 | `/workspace/.uploads/` 目录下老板上传的 txt 文件中（文件名可能变化，用 `cat` 查看内容获取 token） |
+| 推送命令 | `git push https://<TOKEN>@github.com/LaoGuaiGe/hdochub-blog.git main` |
+| 推送后清理 | 立即执行 `git remote set-url origin https://github.com/LaoGuaiGe/hdochub-blog.git` 清除 token |
+| Git 配置注意 | 如遇远程有不同历史，使用 `--allow-unrelated-histories` 合并 |
+| **铁律** | **每次修复/改代码完成后，必须立即 commit + push 到 GitHub，不能只留在本地。老板拉不到代码 = 工作没做完。** |
 
 ### 部署目标
 
