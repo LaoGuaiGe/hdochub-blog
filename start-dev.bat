@@ -54,22 +54,41 @@ if %errorlevel% equ 0 (
 
 REM Docker not running, try to start it
 echo [INFO] Docker engine not running, trying to start...
+
+REM Search common Docker Desktop locations
 set "DOCKER_EXE="
 if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
     set "DOCKER_EXE=C:\Program Files\Docker\Docker\Docker Desktop.exe"
 )
-
-if not defined DOCKER_EXE (
-    echo [ERROR] Docker Desktop not found at default path
-    echo   Please open Docker Desktop manually, wait for whale icon
-    echo   Then run this script again
-    pause
-    exit /b 1
+if not defined DOCKER_EXE if exist "C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe" (
+    set "DOCKER_EXE=C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe"
+)
+if not defined DOCKER_EXE if exist "%LOCALAPPDATA%\Docker\Docker Desktop.exe" (
+    set "DOCKER_EXE=%LOCALAPPDATA%\Docker\Docker Desktop.exe"
+)
+if not defined DOCKER_EXE if exist "%PROGRAMFILES%\Docker\Docker\Docker Desktop.exe" (
+    set "DOCKER_EXE=%PROGRAMFILES%\Docker\Docker\Docker Desktop.exe"
 )
 
-echo   Starting Docker Desktop...
-start "" "!DOCKER_EXE!"
-echo   Waiting for Docker engine (max 90s)...
+REM Try to find Docker Desktop via where command
+if not defined DOCKER_EXE (
+    for /f "delims=" %%i in ('where "Docker Desktop" 2^>nul') do (
+        set "DOCKER_EXE=%%i"
+    )
+)
+
+if defined DOCKER_EXE (
+    echo   Found Docker Desktop: !DOCKER_EXE!
+    echo   Starting Docker Desktop...
+    start "" "!DOCKER_EXE!"
+) else (
+    echo [WARN] Docker Desktop.exe not found in common locations
+    echo   Trying to start via Start Menu...
+    start "Docker Desktop" "dockerdesktop:"
+    timeout /t 5 /nobreak >nul
+)
+
+echo   Waiting for Docker engine (max 120s)...
 set /a DOCKER_WAIT=0
 
 :wait_docker_engine
@@ -80,13 +99,18 @@ if !errorlevel! equ 0 (
     echo [OK] Docker engine is ready
     goto docker_ok
 )
-if !DOCKER_WAIT! lss 30 (
-    echo   Waiting... (!DOCKER_WAIT!/30)
+if !DOCKER_WAIT! lss 40 (
+    echo   Waiting... (!DOCKER_WAIT!/40)
     goto wait_docker_engine
 )
 echo [ERROR] Docker engine startup timeout
-echo   Please open Docker Desktop manually, wait for whale icon
-echo   Then run this script again
+echo.
+echo   Docker engine did not start within 120 seconds.
+echo   Please try:
+echo     1. Open Docker Desktop manually from Start Menu
+echo     2. Wait until the whale icon in taskbar becomes steady
+echo     3. Run start-dev.bat again
+echo.
 pause
 exit /b 1
 
