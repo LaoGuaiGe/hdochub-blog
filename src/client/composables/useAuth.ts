@@ -22,6 +22,13 @@ export function useAuth() {
   }
 
   /**
+   * 登录
+   */
+  async function login(token: string, user: any, remember?: boolean) {
+    await authStore.login(token, user, remember)
+  }
+
+  /**
    * 退出登录
    */
   async function logout() {
@@ -36,6 +43,7 @@ export function useAuth() {
     displayName,
     avatar,
     initAuth,
+    login,
     logout
   }
 }

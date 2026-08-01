@@ -20,7 +20,7 @@ const emit = defineEmits<{
   blur: []
 }>()
 
-const textareaId = props.id || `textarea-${Math.random().toString(36).slice(2, 9)}`
+const textareaId = props.id || useId()
 
 function onInput(e: Event) {
   emit('update:modelValue', (e.target as HTMLTextAreaElement).value)

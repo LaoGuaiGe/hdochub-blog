@@ -28,7 +28,11 @@
 
 <script setup lang="ts">
 const { initAuth, logout } = useAuth()
-await initAuth()
+try {
+  await initAuth()
+} catch {
+  // 忽略初始化错误，页面使用默认状态渲染
+}
 
 async function handleLogout() {
   await logout()

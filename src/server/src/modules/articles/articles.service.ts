@@ -892,12 +892,20 @@ export class ArticlesService {
       slug: a.slug,
       summary: a.summary,
       coverImage: a.coverImage,
-      category: a.category,
-      tags: (a.tags || []).map((t: any) => t.tag),
+      category: a.category
+        ? { id: Number(a.category.id), name: a.category.name, slug: a.category.slug }
+        : null,
+      tags: (a.tags || []).map((t: any) => t.tag).filter(Boolean).map((tag: any) => ({
+        id: Number(tag.id),
+        name: tag.name,
+        slug: tag.slug,
+      })),
       author: a.author
         ? {
-            ...a.author,
             id: Number(a.author.id),
+            username: a.author.username,
+            nickname: a.author.nickname,
+            avatar: a.author.avatar,
           }
         : null,
       viewCount: a.viewCount,

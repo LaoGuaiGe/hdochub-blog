@@ -17,20 +17,14 @@ const groups = ref<ArchiveGroup[]>([])
 
 watch(archive, (val) => {
   if (!val) return
-  const map = new Map<number, Map<number, any[]>>()
-  val.forEach(item => {
-    if (!map.has(item.year)) map.set(item.year, new Map())
-    const monthMap = map.get(item.year)!
-    if (!monthMap.has(item.month)) monthMap.set(item.month, [])
-    monthMap.get(item.month)!.push(...item.items)
-  })
-  const years = Array.from(map.keys()).sort((a, b) => b - a)
-  groups.value = years.map((year, idx) => ({
-    year,
-    months: Array.from(map.get(year)!.entries())
-      .map(([month, items]) => ({ month, items: items.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()) }))
-      .sort((a, b) => b.month - a.month),
-    expanded: idx === 0
+  // 后端返回 {year, months: [{month, articles}]} 嵌套结构，直接映射
+  groups.value = val.map((g: any, idx: number) => ({
+    year: g.year,
+    months: (g.months || []).map((m: any) => ({
+      month: m.month,
+      items: (m.articles || []).sort((a: any, b: any) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()),
+    })),
+    expanded: idx === 0,
   }))
 }, { immediate: true })
 
@@ -54,7 +48,7 @@ function isMonthExpanded(key: string): boolean {
 
 const totalCount = computed(() => {
   if (!archive.value) return 0
-  return archive.value.reduce((sum, g) => sum + g.items.length, 0)
+  return archive.value.reduce((sum: number, g: any) => sum + (g.months || []).reduce((s: number, m: any) => s + (m.articles || []).length, 0), 0)
 })
 
 useHead({ title: '归档 - hdochub' })

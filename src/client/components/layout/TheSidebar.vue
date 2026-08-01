@@ -3,7 +3,7 @@ interface Props {
   type?: 'dashboard' | 'admin'
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   type: 'dashboard'
 })
 

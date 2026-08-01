@@ -9,6 +9,7 @@ REM Later runs: skip init, start services directly
 REM Reset: start-dev.bat --reset
 REM ============================================================
 
+setlocal enabledelayedexpansion
 set PROJECT_DIR=%~dp0
 cd /d "%PROJECT_DIR%"
 
@@ -24,6 +25,7 @@ if /i "%1"=="--reset" (
     if exist .setup-done del /q .setup-done
     if exist src\server\.env del /q src\server\.env
     if exist src\client\.env del /q src\client\.env
+    if exist src\server\tsconfig.tsbuildinfo del /q src\server\tsconfig.tsbuildinfo
 )
 
 REM ========== Check Docker ==========
@@ -45,37 +47,50 @@ if %errorlevel% neq 0 (
 
 REM Check if Docker engine is running
 docker ps >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [INFO] Docker engine not running, trying to start...
-    set "DOCKER_EXE="
-    if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
-        set "DOCKER_EXE=C:\Program Files\Docker\Docker\Docker Desktop.exe"
-    )
-    if defined DOCKER_EXE (
-        start "" "%DOCKER_EXE%"
-        echo [INFO] Waiting for Docker engine to start...
-        set /a DOCKER_WAIT=0
-        :wait_docker_engine
-        set /a DOCKER_WAIT+=1
-        timeout /t 3 /nobreak >nul
-        docker ps >nul 2>nul
-        if %errorlevel% equ 0 (
-            echo [OK] Docker engine is ready
-            goto docker_ok
-        )
-        if %DOCKER_WAIT% lss 20 (
-            echo   Waiting... (%DOCKER_WAIT%/20)
-            goto wait_docker_engine
-        )
-    )
-    echo [ERROR] Docker engine not running
-    echo   Please open Docker Desktop manually, wait for the whale icon to stop animating
+if %errorlevel% equ 0 (
+    echo [OK] Docker engine is running
+    goto docker_ok
+)
+
+REM Docker not running, try to start it
+echo [INFO] Docker engine not running, trying to start...
+set "DOCKER_EXE="
+if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
+    set "DOCKER_EXE=C:\Program Files\Docker\Docker\Docker Desktop.exe"
+)
+
+if not defined DOCKER_EXE (
+    echo [ERROR] Docker Desktop not found at default path
+    echo   Please open Docker Desktop manually, wait for whale icon
     echo   Then run this script again
     pause
     exit /b 1
 )
+
+echo   Starting Docker Desktop...
+start "" "!DOCKER_EXE!"
+echo   Waiting for Docker engine (max 90s)...
+set /a DOCKER_WAIT=0
+
+:wait_docker_engine
+set /a DOCKER_WAIT+=1
+timeout /t 3 /nobreak >nul
+docker ps >nul 2>nul
+if !errorlevel! equ 0 (
+    echo [OK] Docker engine is ready
+    goto docker_ok
+)
+if !DOCKER_WAIT! lss 30 (
+    echo   Waiting... (!DOCKER_WAIT!/30)
+    goto wait_docker_engine
+)
+echo [ERROR] Docker engine startup timeout
+echo   Please open Docker Desktop manually, wait for whale icon
+echo   Then run this script again
+pause
+exit /b 1
+
 :docker_ok
-echo [OK] Docker engine is running
 
 REM ========== Start MySQL and Redis ==========
 echo.
@@ -85,16 +100,17 @@ docker compose up -d
 REM Wait for MySQL to be ready (poll, max 60 seconds)
 echo Waiting for MySQL...
 set /a WAIT_COUNT=0
+
 :wait_mysql
 set /a WAIT_COUNT+=1
 docker exec hdochub-mysql mysqladmin ping -h localhost -uroot -phdochub_dev_2026 --silent >nul 2>nul
-if %errorlevel% equ 0 (
+if !errorlevel! equ 0 (
     echo [OK] MySQL is ready
     goto mysql_ready
 )
-if %WAIT_COUNT% lss 30 (
+if !WAIT_COUNT! lss 30 (
     timeout /t 2 /nobreak >nul
-    echo   Waiting... (%WAIT_COUNT%/30)
+    echo   Waiting... (!WAIT_COUNT!/30)
     goto wait_mysql
 )
 echo [ERROR] MySQL startup timeout (60s)
@@ -105,7 +121,7 @@ exit /b 1
 
 REM Wait for Redis
 docker exec hdochub-redis redis-cli ping >nul 2>nul
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
     timeout /t 3 /nobreak >nul
 )
 echo [OK] Redis is ready
@@ -147,6 +163,10 @@ echo Seeding initial data...
 call npm run prisma:seed
 echo [OK] Initial data seeded
 
+echo Building backend (first compile)...
+call npm run build
+echo [OK] Backend built successfully
+
 REM --- Frontend ---
 cd /d "%PROJECT_DIR%src\client"
 
@@ -175,16 +195,31 @@ start "hdochub backend" cmd /k "cd /d %PROJECT_DIR%src\server && npm run start:d
 
 echo Waiting for backend...
 set /a BACKEND_WAIT=0
+
 :wait_backend
 set /a BACKEND_WAIT+=1
 timeout /t 2 /nobreak >nul
-powershell -Command "try { (Invoke-WebRequest -Uri 'http://localhost:4000/api' -UseBasicParsing -TimeoutSec 2).StatusCode" >nul 2>nul
-if %errorlevel% equ 0 (
-    echo [OK] Backend is ready
-    goto backend_ready
+
+REM Use curl if available (Windows 10+), otherwise fallback to PowerShell
+where curl >nul 2>nul
+if !errorlevel! equ 0 (
+    REM curl returns 0 if it connects and gets any HTTP response (even 404/500)
+    REM This is sufficient: we just need to know the backend is up
+    curl -s -o nul --connect-timeout 2 http://localhost:4000/api 2>nul
+    if !errorlevel! equ 0 (
+        echo [OK] Backend is ready
+        goto backend_ready
+    )
+) else (
+    powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:4000/api' -UseBasicParsing -TimeoutSec 2 | Out-Null; exit 0 } catch { exit 1 }" >nul 2>nul
+    if !errorlevel! equ 0 (
+        echo [OK] Backend is ready
+        goto backend_ready
+    )
 )
-if %BACKEND_WAIT% lss 20 (
-    echo   Waiting... (%BACKEND_WAIT%/20)
+
+if !BACKEND_WAIT! lss 20 (
+    echo   Waiting... (!BACKEND_WAIT!/20)
     goto wait_backend
 )
 echo [INFO] Backend is slow, starting frontend anyway

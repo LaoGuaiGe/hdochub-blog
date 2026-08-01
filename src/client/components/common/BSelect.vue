@@ -20,7 +20,7 @@ const emit = defineEmits<{
   change: [value: string | number]
 }>()
 
-const selectId = props.id || `select-${Math.random().toString(36).slice(2, 9)}`
+const selectId = props.id || useId()
 
 function onChange(e: Event) {
   const val = (e.target as HTMLSelectElement).value

@@ -7,6 +7,10 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt'
   ],
+  components: [
+    { path: '~/components/common', prefix: '', pathPrefix: false },
+    { path: '~/components', pathPrefix: false }
+  ],
   css: [
     '~/assets/css/main.css'
   ],
@@ -28,8 +32,32 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:4000/api',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
+  },
+  nitro: {
+    devProxy: {
+      '/api/': {
+        target: 'http://localhost:4000/api/',
+        changeOrigin: true
+      },
+      '/uploads/': {
+        target: 'http://localhost:4000/uploads/',
+        changeOrigin: true
+      },
+      '/rss.xml': {
+        target: 'http://localhost:4000/rss.xml',
+        changeOrigin: true
+      },
+      '/sitemap.xml': {
+        target: 'http://localhost:4000/sitemap.xml',
+        changeOrigin: true
+      },
+      '/robots.txt': {
+        target: 'http://localhost:4000/robots.txt',
+        changeOrigin: true
+      }
     }
   },
   typescript: {

@@ -6,10 +6,11 @@
 # 如需重新初始化：./start-dev.sh --reset
 # ============================================================
 
-set -e
-
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_DIR"
+
+# 错误处理策略：不启用 errexit（会导致 MySQL 轮询超时直接退出）
+# 改为每个关键步骤显式检查退出码
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -28,7 +29,7 @@ print_err()  { echo -e "${RED}  [错误] $1${NC}"; }
 
 # ========== 检查是否需要重新初始化 ==========
 if [ "$1" == "--reset" ]; then
-    rm -f .setup-done src/server/.env src/client/.env
+    rm -f .setup-done src/server/.env src/client/.env src/server/tsconfig.tsbuildinfo
     print_warn "检测到 --reset，将重新初始化"
 fi
 
@@ -85,26 +86,48 @@ else
     [ ! -f .env ] && cp .env.dev .env && print_ok "后端 .env 已生成"
 
     echo "  安装后端依赖（约 1-2 分钟）..."
-    npm install --silent 2>/dev/null
+    if ! npm install --silent; then
+        print_err "后端依赖安装失败，请检查网络后重试"
+        exit 1
+    fi
     print_ok "后端依赖已安装"
 
     echo "  生成 Prisma Client..."
-    npx prisma generate 2>/dev/null
+    if ! npx prisma generate; then
+        print_err "Prisma Client 生成失败"
+        exit 1
+    fi
     print_ok "Prisma Client 已生成"
 
     echo "  创建数据库表结构..."
-    npx prisma db push --accept-data-loss 2>/dev/null
+    if ! npx prisma db push --accept-data-loss; then
+        print_err "数据库表结构创建失败，请检查 MySQL 是否就绪"
+        exit 1
+    fi
     print_ok "数据库表结构已创建"
 
     echo "  写入初始数据..."
-    npm run prisma:seed 2>/dev/null
+    if ! npm run prisma:seed; then
+        print_err "初始数据写入失败"
+        exit 1
+    fi
     print_ok "初始数据已写入"
+
+    echo "  首次编译后端..."
+    if ! npm run build; then
+        print_err "后端编译失败"
+        exit 1
+    fi
+    print_ok "后端编译完成"
 
     cd "$PROJECT_DIR/src/client"
     [ ! -f .env ] && cp .env.example .env && print_ok "前端 .env 已生成"
 
     echo "  安装前端依赖（约 1-2 分钟）..."
-    npm install --silent 2>/dev/null
+    if ! npm install --silent; then
+        print_err "前端依赖安装失败，请检查网络后重试"
+        exit 1
+    fi
     print_ok "前端依赖已安装"
 
     cd "$PROJECT_DIR"

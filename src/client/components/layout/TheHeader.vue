@@ -68,8 +68,8 @@ async function handleLogout() {
       </div>
 
       <!-- 右侧：搜索 + 用户 -->
-      <div class="flex items-center gap-2">
-        <div class="hidden lg:block w-48">
+      <div class="flex items-center gap-3">
+        <div class="hidden lg:block w-56">
           <BSearchBar
             v-model="searchKeyword"
             size="small"
@@ -85,12 +85,12 @@ async function handleLogout() {
         </template>
 
         <!-- 已登录 -->
-        <div v-else class="relative">
+        <div v-else class="relative ml-2">
           <button
-            class="flex items-center gap-2 border-2 border-black bg-white px-2 py-1 transition-all duration-fast ease-linear hover:bg-black hover:text-white"
+            class="flex items-center gap-2 border-2 border-black bg-white px-3 py-1 transition-all duration-fast ease-linear hover:bg-black hover:text-white"
             @click="toggleUserMenu"
           >
-            <BAvatar :src="avatar" :name="displayName" :size="24" />
+            <BAvatar :src="avatar" :name="displayName" :size="28" />
             <span class="hidden sm:inline font-mono text-small font-bold">{{ displayName }}</span>
             <span class="font-mono text-tiny">▼</span>
           </button>

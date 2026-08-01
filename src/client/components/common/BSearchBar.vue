@@ -1,11 +1,12 @@
 <script setup lang="ts">
 interface Props {
-  modelValue: string
+  modelValue?: string
   placeholder?: string
   size?: 'default' | 'small'
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelValue: '',
   placeholder: '搜索文章...',
   size: 'default'
 })

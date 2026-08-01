@@ -36,7 +36,12 @@ export async function request<T = unknown>(
   options: any = {}
 ): Promise<T> {
   const config = useRuntimeConfig()
-  const baseURL = config.public.apiBase
+  let baseURL = config.public.apiBase
+
+  // SSR 模式下，$fetch 不走 devProxy，需要使用绝对 URL 直接请求后端
+  if (import.meta.server) {
+    baseURL = process.env.NUXT_PUBLIC_API_BASE_SSR || 'http://localhost:4000/api'
+  }
 
   const token = getToken()
   const headers: Record<string, string> = {

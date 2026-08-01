@@ -25,7 +25,7 @@ const emit = defineEmits<{
   enter: []
 }>()
 
-const inputId = props.id || `input-${Math.random().toString(36).slice(2, 9)}`
+const inputId = props.id || useId()
 
 function onInput(e: Event) {
   emit('update:modelValue', (e.target as HTMLInputElement).value)

@@ -1,5 +1,6 @@
 @echo off
 chcp 65001 >nul
+setlocal enabledelayedexpansion
 title hdochub setup
 
 REM ============================================================
@@ -74,7 +75,7 @@ if %errorlevel% neq 0 (
 
 echo [CHECK] Docker engine...
 docker ps >nul 2>nul
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
     echo [INFO] Docker engine not running, starting Docker Desktop...
     set "DOCKER_PATH="
     if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
@@ -83,7 +84,7 @@ if %errorlevel% neq 0 (
 
     if defined DOCKER_PATH (
         echo   Starting Docker Desktop...
-        start "" "%DOCKER_PATH%"
+        start "" "!DOCKER_PATH!"
         echo   Waiting for Docker engine (max 90s)...
     ) else (
         echo   Cannot find Docker Desktop, please start manually
@@ -96,12 +97,12 @@ if %errorlevel% neq 0 (
     timeout /t 5 /nobreak >nul
     set /a WAIT_COUNT+=1
     docker ps >nul 2>nul
-    if %errorlevel% equ 0 (
+    if !errorlevel! equ 0 (
         echo [OK] Docker engine is ready
         goto docker_ready
     )
-    if %WAIT_COUNT% lss 18 (
-        echo   Waiting... (%WAIT_COUNT%/18)
+    if !WAIT_COUNT! lss 18 (
+        echo   Waiting... (!WAIT_COUNT!/18)
         goto wait_docker
     ) else (
         echo [ERROR] Docker engine startup timeout
