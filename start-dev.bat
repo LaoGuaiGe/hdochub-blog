@@ -47,45 +47,52 @@ if %errorlevel% neq 0 (
 
 REM Check if Docker engine is running
 docker ps >nul 2>nul
-if %errorlevel% equ 0 (
+if !errorlevel! equ 0 (
     echo [OK] Docker engine is running
     goto docker_ok
 )
 
-REM Docker not running, try to start it
-echo [INFO] Docker engine not running, trying to start...
+REM Docker not running, auto-start Docker Desktop
+echo [INFO] Docker engine not running, auto-starting Docker Desktop...
 
-REM Search common Docker Desktop locations
+REM Strategy 1: Derive Docker Desktop.exe path from docker CLI path
+REM docker.exe is at <install>\resources\bin\docker.exe
+REM Docker Desktop.exe is at <install>\Docker Desktop.exe
 set "DOCKER_EXE="
-if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
-    set "DOCKER_EXE=C:\Program Files\Docker\Docker\Docker Desktop.exe"
+for /f "delims=" %%i in ('where docker 2^>nul') do (
+    set "DOCKER_CLI=%%i"
 )
-if not defined DOCKER_EXE if exist "C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe" (
-    set "DOCKER_EXE=C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe"
-)
-if not defined DOCKER_EXE if exist "%LOCALAPPDATA%\Docker\Docker Desktop.exe" (
-    set "DOCKER_EXE=%LOCALAPPDATA%\Docker\Docker Desktop.exe"
-)
-if not defined DOCKER_EXE if exist "%PROGRAMFILES%\Docker\Docker\Docker Desktop.exe" (
-    set "DOCKER_EXE=%PROGRAMFILES%\Docker\Docker\Docker Desktop.exe"
+if defined DOCKER_CLI (
+    REM Replace \resources\bin\docker.exe with \Docker Desktop.exe
+    set "DOCKER_EXE=!DOCKER_CLI:\resources\bin\docker.exe=!\Docker Desktop.exe"
+    if not exist "!DOCKER_EXE!" set "DOCKER_EXE="
 )
 
-REM Try to find Docker Desktop via where command
+REM Strategy 2: Common install paths
+if not defined DOCKER_EXE if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" set "DOCKER_EXE=C:\Program Files\Docker\Docker\Docker Desktop.exe"
+if not defined DOCKER_EXE if exist "C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe" set "DOCKER_EXE=C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe"
+
+REM Strategy 3: Registry query
 if not defined DOCKER_EXE (
-    for /f "delims=" %%i in ('where "Docker Desktop" 2^>nul') do (
-        set "DOCKER_EXE=%%i"
+    for /f "tokens=2,*" %%a in ('reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Docker Desktop" /v InstallLocation 2^>nul') do (
+        if exist "%%b\Docker Desktop.exe" set "DOCKER_EXE=%%b\Docker Desktop.exe"
+    )
+)
+
+REM Strategy 4: PowerShell registry search (last resort)
+if not defined DOCKER_EXE (
+    for /f "delims=" %%i in ('powershell -NoProfile -Command "(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*','HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue ^| Where-Object { $_.DisplayName -like '*Docker Desktop*' } ^| Select-Object -First 1 -ExpandProperty InstallLocation" 2^>nul') do (
+        if exist "%%i\Docker Desktop.exe" set "DOCKER_EXE=%%i\Docker Desktop.exe"
     )
 )
 
 if defined DOCKER_EXE (
-    echo   Found Docker Desktop: !DOCKER_EXE!
+    echo   Found: !DOCKER_EXE!
     echo   Starting Docker Desktop...
     start "" "!DOCKER_EXE!"
 ) else (
-    echo [WARN] Docker Desktop.exe not found in common locations
-    echo   Trying to start via Start Menu...
-    start "Docker Desktop" "dockerdesktop:"
-    timeout /t 5 /nobreak >nul
+    echo [WARN] Cannot locate Docker Desktop.exe, trying shell protocol...
+    start "" "dockerdesktop:"
 )
 
 echo   Waiting for Docker engine (max 120s)...
@@ -103,13 +110,10 @@ if !DOCKER_WAIT! lss 40 (
     echo   Waiting... (!DOCKER_WAIT!/40)
     goto wait_docker_engine
 )
-echo [ERROR] Docker engine startup timeout
+echo [ERROR] Docker engine startup timeout (120s)
 echo.
-echo   Docker engine did not start within 120 seconds.
-echo   Please try:
-echo     1. Open Docker Desktop manually from Start Menu
-echo     2. Wait until the whale icon in taskbar becomes steady
-echo     3. Run start-dev.bat again
+echo   Please open Docker Desktop manually from Start Menu,
+echo   wait for whale icon to become steady, then run again.
 echo.
 pause
 exit /b 1
@@ -273,3 +277,4 @@ echo   Close backend/frontend windows to stop services
 echo   Stop Docker containers: docker compose down
 echo.
 pause
+exit /b 0
