@@ -1,12 +1,12 @@
 @echo off
 chcp 65001 >nul
-title hdochub 博客本地启动
+title hdochub blog
 
 REM ============================================================
-REM hdochub 博客本地一键启动脚本（Windows）
-REM 首次运行：自动初始化全部环境
-REM 后续运行：跳过初始化，直接启动服务
-REM 如需重新初始化：start-dev.bat --reset
+REM hdochub blog local startup script (Windows)
+REM First run: full initialization
+REM Later runs: skip init, start services directly
+REM Reset: start-dev.bat --reset
 REM ============================================================
 
 set PROJECT_DIR=%~dp0
@@ -14,181 +14,203 @@ cd /d "%PROJECT_DIR%"
 
 echo.
 echo ==================================================
-echo   hdochub 博客本地启动
+echo   hdochub blog local startup
 echo ==================================================
 echo.
 
-REM ========== 检查是否需要重新初始化 ==========
+REM ========== Check reset flag ==========
 if /i "%1"=="--reset" (
-    echo [注意] 检测到 --reset 参数，将重新初始化
+    echo [INFO] --reset detected, will re-initialize
     if exist .setup-done del /q .setup-done
     if exist src\server\.env del /q src\server\.env
     if exist src\client\.env del /q src\client\.env
 )
 
-REM ========== 前置检查 ==========
-echo [第 0 步] 环境检查...
+REM ========== Check Docker ==========
+echo [Step 0] Checking environment...
 
 where docker >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [错误] 未检测到 Docker，请先运行 setup-windows.bat
+    echo [ERROR] Docker not found. Please run setup-windows.bat first
     pause
     exit /b 1
 )
 
 where node >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [错误] 未检测到 Node.js，请先运行 setup-windows.bat
+    echo [ERROR] Node.js not found. Please run setup-windows.bat first
     pause
     exit /b 1
 )
 
-REM 检查 Docker 引擎是否运行
+REM Check if Docker engine is running
 docker ps >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [错误] Docker 引擎未运行
-    echo   请先打开 Docker Desktop，等鲸鱼图标稳定后再运行本脚本
+    echo [INFO] Docker engine not running, trying to start...
+    set "DOCKER_EXE="
+    if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
+        set "DOCKER_EXE=C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    )
+    if defined DOCKER_EXE (
+        start "" "%DOCKER_EXE%"
+        echo [INFO] Waiting for Docker engine to start...
+        set /a DOCKER_WAIT=0
+        :wait_docker_engine
+        set /a DOCKER_WAIT+=1
+        timeout /t 3 /nobreak >nul
+        docker ps >nul 2>nul
+        if %errorlevel% equ 0 (
+            echo [OK] Docker engine is ready
+            goto docker_ok
+        )
+        if %DOCKER_WAIT% lss 20 (
+            echo   Waiting... (%DOCKER_WAIT%/20)
+            goto wait_docker_engine
+        )
+    )
+    echo [ERROR] Docker engine not running
+    echo   Please open Docker Desktop manually, wait for the whale icon to stop animating
+    echo   Then run this script again
     pause
     exit /b 1
 )
-echo [完成] 环境检查通过
+:docker_ok
+echo [OK] Docker engine is running
 
-REM ========== 启动 MySQL 和 Redis ==========
+REM ========== Start MySQL and Redis ==========
 echo.
-echo [第 1 步] 启动 MySQL 和 Redis...
+echo [Step 1] Starting MySQL and Redis...
 docker compose up -d
 
-REM 等待 MySQL 真正就绪（轮询，最多等 60 秒）
-echo 等待 MySQL 就绪...
+REM Wait for MySQL to be ready (poll, max 60 seconds)
+echo Waiting for MySQL...
 set /a WAIT_COUNT=0
 :wait_mysql
 set /a WAIT_COUNT+=1
 docker exec hdochub-mysql mysqladmin ping -h localhost -uroot -phdochub_dev_2026 --silent >nul 2>nul
 if %errorlevel% equ 0 (
-    echo [完成] MySQL 已就绪（等待了 %WAIT_COUNT% 次）
+    echo [OK] MySQL is ready
     goto mysql_ready
 )
 if %WAIT_COUNT% lss 30 (
     timeout /t 2 /nobreak >nul
-    echo   等待中... (%WAIT_COUNT%/30)
+    echo   Waiting... (%WAIT_COUNT%/30)
     goto wait_mysql
 )
-echo [错误] MySQL 启动超时（60 秒）
-echo   请检查 Docker 是否正常运行
+echo [ERROR] MySQL startup timeout (60s)
 pause
 exit /b 1
 
 :mysql_ready
 
-REM 等待 Redis 就绪
+REM Wait for Redis
 docker exec hdochub-redis redis-cli ping >nul 2>nul
 if %errorlevel% neq 0 (
-    echo 等待 Redis 就绪...
     timeout /t 3 /nobreak >nul
 )
-echo [完成] Redis 已就绪
+echo [OK] Redis is ready
 
-REM ========== 判断是否已初始化 ==========
+REM ========== Check if already initialized ==========
 if exist .setup-done (
     echo.
-    echo [跳过初始化] 已初始化过，直接启动服务
-    echo   如需重新初始化: start-dev.bat --reset
+    echo [SKIP] Already initialized, starting services directly
+    echo   To re-initialize: start-dev.bat --reset
     goto start_services
 )
 
-REM ========== 首次初始化 ==========
+REM ========== First-time initialization ==========
 echo.
-echo [首次初始化] 配置环境和数据库...
+echo [INIT] First-time setup...
 echo.
 
-REM --- 后端配置 ---
+REM --- Backend ---
 cd /d "%PROJECT_DIR%src\server"
 
 if not exist .env (
     copy .env.dev .env >nul
-    echo [完成] 后端 .env 已生成
+    echo [OK] Backend .env created
 )
 
-echo 安装后端依赖（约 1-2 分钟）...
+echo Installing backend dependencies (1-2 min)...
 call npm install --silent
-echo [完成] 后端依赖已安装
+echo [OK] Backend dependencies installed
 
-echo 生成 Prisma Client...
+echo Generating Prisma Client...
 call npx prisma generate
-echo [完成] Prisma Client 已生成
+echo [OK] Prisma Client generated
 
-echo 创建数据库表结构...
+echo Creating database tables...
 call npx prisma db push --accept-data-loss
-echo [完成] 数据库表结构已创建
+echo [OK] Database tables created
 
-echo 写入初始数据...
+echo Seeding initial data...
 call npm run prisma:seed
-echo [完成] 初始数据已写入
+echo [OK] Initial data seeded
 
-REM --- 前端配置 ---
+REM --- Frontend ---
 cd /d "%PROJECT_DIR%src\client"
 
 if not exist .env (
     copy .env.example .env >nul
-    echo [完成] 前端 .env 已生成
+    echo [OK] Frontend .env created
 )
 
-echo 安装前端依赖（约 1-2 分钟）...
+echo Installing frontend dependencies (1-2 min)...
 call npm install --silent
-echo [完成] 前端依赖已安装
+echo [OK] Frontend dependencies installed
 
-REM --- 标记初始化完成 ---
+REM --- Mark done ---
 cd /d "%PROJECT_DIR%"
 echo done > .setup-done
 echo.
-echo [完成] 首次初始化完成
+echo [OK] First-time setup complete
 
 :start_services
-REM ========== 启动服务 ==========
+REM ========== Start services ==========
 echo.
-echo [第 2 步] 启动服务...
+echo [Step 2] Starting services...
 
-echo 启动后端...
-start "hdochub 后端" cmd /k "cd /d %PROJECT_DIR%src\server && npm run start:dev"
+echo Starting backend...
+start "hdochub backend" cmd /k "cd /d %PROJECT_DIR%src\server && npm run start:dev"
 
-echo 等待后端就绪...
+echo Waiting for backend...
 set /a BACKEND_WAIT=0
 :wait_backend
 set /a BACKEND_WAIT+=1
 timeout /t 2 /nobreak >nul
 powershell -Command "try { (Invoke-WebRequest -Uri 'http://localhost:4000/api' -UseBasicParsing -TimeoutSec 2).StatusCode" >nul 2>nul
 if %errorlevel% equ 0 (
-    echo [完成] 后端已就绪
+    echo [OK] Backend is ready
     goto backend_ready
 )
 if %BACKEND_WAIT% lss 20 (
-    echo   等待后端... (%BACKEND_WAIT%/20)
+    echo   Waiting... (%BACKEND_WAIT%/20)
     goto wait_backend
 )
-echo [注意] 后端启动较慢，前端先启动
+echo [INFO] Backend is slow, starting frontend anyway
 goto start_frontend
 
 :backend_ready
 :start_frontend
-echo 启动前端...
-start "hdochub 前端" cmd /k "cd /d %PROJECT_DIR%src\client && npm run dev"
+echo Starting frontend...
+start "hdochub frontend" cmd /k "cd /d %PROJECT_DIR%src\client && npm run dev"
 
-REM ========== 完成 ==========
+REM ========== Done ==========
 echo.
 echo ==================================================
-echo   启动完成！
+echo   Startup complete!
 echo ==================================================
 echo.
-echo   博客首页:  http://localhost:3000
-echo   后台管理:  http://localhost:3000/admin
+echo   Blog:       http://localhost:3000
+echo   Admin:      http://localhost:3000/admin
 echo.
-echo   管理员账号: admin
-echo   管理员密码: Admin@123456
+echo   Username:   admin
+echo   Password:   Admin@123456
 echo.
-echo   数据库 MySQL: localhost:3307 (Docker)
-echo   缓存 Redis:  localhost:6380 (Docker)
+echo   MySQL:      localhost:3307 (Docker)
+echo   Redis:      localhost:6380 (Docker)
 echo.
-echo   关闭后端/前端窗口即可停止对应服务
-echo   停止 Docker 容器: docker compose down
+echo   Close backend/frontend windows to stop services
+echo   Stop Docker containers: docker compose down
 echo.
 pause
