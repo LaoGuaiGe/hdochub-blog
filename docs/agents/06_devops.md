@@ -96,3 +96,58 @@
 - 服务器安全：关闭不必要的端口、设置防火墙
 - 遇到服务器环境问题及时反馈，不拖延
 - 备份策略要有，数据库和代码都要有备份方案
+
+---
+
+## 记忆库（项目关键信息）
+
+> 以下信息为运维在本项目中需要牢记的关键信息，后续部署和维护以此为准。
+
+### 代码仓库
+
+| 项目 | 内容 |
+|------|------|
+| 仓库地址 | https://github.com/LaoGuaiGe/hdochub-blog |
+| 主分支 | main |
+| 仓库类型 | GitHub 公开仓库 |
+| 推送方式 | 使用 Personal Access Token 认证（token 由甲方提供，使用后已从 remote URL 中清除） |
+| Git 配置注意 | 推送时使用 `git push origin main`，如遇远程有不同历史，使用 `--allow-unrelated-histories` 合并 |
+
+### 部署目标
+
+| 项目 | 内容 |
+|------|------|
+| 域名 | blog.hdochub.com |
+| 服务器系统 | Ubuntu |
+| 管理面板 | 宝塔面板（BT Panel） |
+| 部署方式 | 手动部署 + PM2 进程管理 + Nginx 反向代理 |
+| SSL | 必须配置，通过宝塔面板申请 Let's Encrypt 证书 |
+| 访问协议 | 仅 HTTPS |
+
+### 技术栈（部署参考）
+
+| 层 | 技术 | 端口（默认） |
+|----|------|-------------|
+| 前端 | Nuxt3（SSR 模式） | 3000 |
+| 后端 | NestJS | 3001 |
+| 数据库 | MySQL | 3306 |
+| 缓存 | Redis | 6379 |
+| 反向代理 | Nginx | 80 / 443 |
+
+### 部署关键步骤（速查）
+
+1. **宝塔面板安装环境**：Node.js、MySQL、Redis、Nginx
+2. **拉取代码**：`git clone https://github.com/LaoGuaiGe/hdochub-blog.git`
+3. **后端部署**：`cd src/server && npm install && npx prisma migrate deploy && npm run build && pm2 start dist/main.js --name hdochub-api`
+4. **前端部署**：`cd src/client && npm install && npm run build && pm2 start .output/server/index.mjs --name hdochub-web`
+5. **Nginx 配置**：配置反向代理，前端走根路径 `/`，后端 API 走 `/api`
+6. **域名解析**：将 blog.hdochub.com A 记录指向服务器 IP
+7. **SSL 证书**：宝塔面板 → 网站 → SSL → Let's Encrypt → 申请并部署
+8. **冒烟测试**：访问 https://blog.hdochub.com 确认首页、登录、后台可用
+
+### 安全注意事项
+
+- Git token 使用后立即从 remote URL 中移除，不硬编码在任何配置文件中
+- `.env` 文件已在 `.gitignore` 中排除，不提交到仓库
+- 服务器防火墙仅开放 80、443、22 端口，数据库和 Redis 不对外暴露
+- PM2 日志定期清理，避免磁盘占满
