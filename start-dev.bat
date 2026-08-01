@@ -95,25 +95,31 @@ if defined DOCKER_EXE (
     start "" "dockerdesktop:"
 )
 
-echo   Waiting for Docker engine (max 120s)...
+echo   Waiting for Docker engine (max 180s)...
 set /a DOCKER_WAIT=0
 
 :wait_docker_engine
 set /a DOCKER_WAIT+=1
 timeout /t 3 /nobreak >nul
-docker ps >nul 2>nul
+
+REM Use timeout to prevent docker ps from hanging during startup
+REM docker info returns faster than docker ps when engine is partially up
+docker info >nul 2>nul
 if !errorlevel! equ 0 (
     echo [OK] Docker engine is ready
     goto docker_ok
 )
-if !DOCKER_WAIT! lss 40 (
-    echo   Waiting... (!DOCKER_WAIT!/40)
+set /a REMAIN=60-DOCKER_WAIT
+echo   Waiting... attempt !DOCKER_WAIT!/60
+if !DOCKER_WAIT! lss 60 (
     goto wait_docker_engine
 )
-echo [ERROR] Docker engine startup timeout (120s)
+echo [ERROR] Docker engine startup timeout (180s)
 echo.
-echo   Please open Docker Desktop manually from Start Menu,
-echo   wait for whale icon to become steady, then run again.
+echo   Docker Desktop may still be initializing. Please:
+echo     1. Check the whale icon in taskbar - wait until it stops animating
+echo     2. If whale icon has an exclamation mark, click it for details
+echo     3. Once whale icon is steady, run start-dev.bat again
 echo.
 pause
 exit /b 1
