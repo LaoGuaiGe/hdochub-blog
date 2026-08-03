@@ -162,7 +162,7 @@ useHead({
 
           <!-- 分类列表 -->
           <div v-if="categories && categories.length" class="border-2 border-black">
-            <p class="border-b-2 border-black bg-black px-4 py-2 font-mono text-small font-bold uppercase text-white">
+            <p class="border-b-2 border-black bg-cyan px-4 py-2 font-mono text-small font-bold uppercase text-black">
               分类 CATEGORIES
             </p>
             <ul>
@@ -184,7 +184,7 @@ useHead({
 
           <!-- 热门标签云 -->
           <div v-if="tags && tags.length" class="border-2 border-black">
-            <p class="border-b-2 border-black bg-black px-4 py-2 font-mono text-small font-bold uppercase text-white">
+            <p class="border-b-2 border-black bg-pink px-4 py-2 font-mono text-small font-bold uppercase text-black">
               标签 TAGS
             </p>
             <div class="p-4 flex flex-wrap gap-1">
@@ -201,7 +201,7 @@ useHead({
 
           <!-- 热门文章 -->
           <div v-if="hotArticles && hotArticles.list.length" class="border-2 border-black">
-            <p class="border-b-2 border-black bg-black px-4 py-2 font-mono text-small font-bold uppercase text-white">
+            <p class="border-b-2 border-black bg-violet px-4 py-2 font-mono text-small font-bold uppercase text-black">
               热门 TOP5
             </p>
             <ol>

@@ -26,6 +26,16 @@ export default <Partial<Config>>{
           DEFAULT: '#FACC15',
           hover: '#EAB308'
         },
+
+        cyan: {
+          DEFAULT: '#22D3EE'
+        },
+        pink: {
+          DEFAULT: '#F472B6'
+        },
+        violet: {
+          DEFAULT: '#A78BFA'
+        },
         green: {
           DEFAULT: '#008000'
         },
