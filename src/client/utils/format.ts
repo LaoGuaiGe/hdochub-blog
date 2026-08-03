@@ -98,6 +98,7 @@ export function getInitial(name: string): string {
  * 高亮关键词（返回带标记的 HTML 片段）
  */
 export function highlightKeyword(text: string, keyword: string): string {
+  if (!text) return ''
   if (!keyword) return escapeHtml(text)
   const escaped = escapeHtml(text)
   const pattern = new RegExp(`(${escapeRegExp(keyword)})`, 'gi')

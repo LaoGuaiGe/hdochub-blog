@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ArticleListItem } from '~/types'
 import { searchApi } from '~/utils/api'
-import { highlightKeyword, formatDate } from '~/utils/format'
+import { formatDate } from '~/utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -73,15 +73,12 @@ useHead(() => ({
         class="card card-hover block p-4"
       >
         <div class="flex items-center justify-between mb-2">
-          <span class="tag-category">{{ article.categoryName }}</span>
-          <span class="font-mono text-tiny">阅读 {{ article.viewCount }}</span>
+          <span class="font-mono text-tiny text-ink-500">命中结果</span>
+          <span class="font-mono text-tiny">{{ formatDate(article.publishedAt) }}</span>
         </div>
-        <h3 class="font-mono text-h5 font-bold mb-2" v-html="highlightKeyword(article.title, keyword)" />
-        <p class="font-sans text-small text-ink-700 mb-2 line-clamp-2" v-html="highlightKeyword(article.excerpt, keyword)" />
-        <div class="flex flex-wrap items-center gap-2 font-mono text-tiny">
-          <span v-for="t in article.tags" :key="t.id" class="tag">#{{ t.name }}</span>
-          <span class="text-ink-500">{{ article.authorName }} · {{ formatDate(article.publishedAt) }}</span>
-        </div>
+        <!-- 标题/摘要直接使用后端已转义并高亮的 HTML -->
+        <h3 class="font-mono text-h5 font-bold mb-2" v-html="article.title" />
+        <p v-if="article.summary" class="font-sans text-small text-ink-700 mb-2 line-clamp-2" v-html="article.summary" />
       </NuxtLink>
 
       <div class="flex justify-center pt-4">
@@ -97,5 +94,12 @@ useHead(() => ({
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* 搜索关键词高亮（后端 <em> 标记） */
+:deep(.card em) {
+  background: var(--color-yellow);
+  color: var(--color-black);
+  font-style: normal;
+  padding: 0 2px;
 }
 </style>
