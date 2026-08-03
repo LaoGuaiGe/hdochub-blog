@@ -43,7 +43,7 @@ function onEnter() {
     <input
       :value="keyword"
       :placeholder="placeholder"
-      class="flex-1 bg-white px-3 font-mono text-body-ui text-black placeholder:text-ink-500 focus:outline-none"
+      class="min-w-0 flex-1 bg-white px-3 font-mono text-body-ui text-black placeholder:text-ink-500 focus:outline-none"
       :class="size === 'small' ? 'py-1 text-small' : 'py-2'"
       @input="onInput"
       @keyup.enter="onEnter"
