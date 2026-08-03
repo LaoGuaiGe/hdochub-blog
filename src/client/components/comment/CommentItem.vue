@@ -34,7 +34,7 @@ function submitReply() {
   cancelReply()
 }
 
-const contentHtml = computed(() => renderMarkdownHtml(props.comment.content))
+const contentHtml = computed(() => renderMarkdownHtml(props.comment.content || ''))
 </script>
 
 <template>

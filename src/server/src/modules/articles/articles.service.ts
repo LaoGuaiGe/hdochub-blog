@@ -936,8 +936,13 @@ export class ArticlesService {
       contentHtml: article.contentHtml,
       summary: article.summary,
       coverImage: article.coverImage,
-      category: article.category,
-      tags: (article.tags || []).map((t: any) => t.tag),
+      category: article.category
+        ? {
+            ...article.category,
+            id: Number(article.category.id),
+          }
+        : null,
+      tags: (article.tags || []).map((t: any) => ({ ...t.tag, id: Number(t.tag.id) })),
       author: article.author
         ? {
             ...article.author,
@@ -945,11 +950,11 @@ export class ArticlesService {
           }
         : null,
       status: article.status,
-      viewCount,
-      likeCount: article.likeCount,
-      commentCount: article.commentCount,
-      wordCount: article.wordCount,
-      readTime: calcReadTime(article.wordCount),
+      viewCount: Number(viewCount),
+      likeCount: Number(article.likeCount),
+      commentCount: Number(article.commentCount),
+      wordCount: Number(article.wordCount),
+      readTime: calcReadTime(Number(article.wordCount)),
       isLiked,
       publishedAt: article.publishedAt?.toISOString() || null,
       createdAt: article.createdAt?.toISOString() || null,

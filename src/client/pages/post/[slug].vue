@@ -19,10 +19,12 @@ if (error.value || !article.value) {
   throw createError({ statusCode: 404, statusMessage: '文章不存在', fatal: true })
 }
 
-const { data: comments, refresh: refreshComments } = await useAsyncData(
+const { data: commentsData, refresh: refreshComments } = await useAsyncData(
   () => `article-comments-${slug.value}`,
   () => commentApi.list(slug.value)
 )
+// 评论接口返回 { list, pagination }，需解包 list
+const comments = computed(() => commentsData.value?.list || [])
 
 const { data: related } = await useAsyncData(
   () => `article-related-${slug.value}`,
@@ -156,7 +158,7 @@ useHead(() => ({
         <div class="mt-6 border-2 border-black bg-white p-6">
           <CommentList
             :article-slug="slug"
-            :comments="comments || []"
+            :comments="comments"
             :is-logged-in="isLoggedIn"
             :current-user-id="user?.id"
             :is-admin="isAdmin"

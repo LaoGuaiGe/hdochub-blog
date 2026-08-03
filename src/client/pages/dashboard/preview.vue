@@ -28,7 +28,7 @@ const wordCount = computed(() => form.value ? countWords(form.value.content) : 0
       <BEmpty title="NO CONTENT" description="没有预览内容" />
     </div>
     <div v-else>
-      <div class="border-2 border-black bg-white p-6 mb-6">
+      <div class="border-2 border-black bg-white p-6 mb-6 max-w-content mx-auto">
         <h1 class="font-mono text-h1 font-bold">{{ form.title }}</h1>
         <p class="mt-2 font-mono text-tiny text-ink-500">{{ wordCount }}字 · 阅读{{ readTime(wordCount) }}分钟</p>
       </div>

@@ -13,13 +13,19 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext): Promise<any> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
     if (isPublic) {
+      // 公开接口也尝试解析 token（失败不拦截游客），供 @CurrentUser() 使用
+      try {
+        await super.canActivate(context);
+      } catch {
+        // 忽略：无 token 或 token 无效时游客正常访问公开接口
+      }
       return true;
     }
 
