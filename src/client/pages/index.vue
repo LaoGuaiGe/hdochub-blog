@@ -4,6 +4,19 @@ import { articleApi, categoryApi, tagApi } from '~/utils/api'
 
 const siteStore = useSiteStore()
 
+// 品牌名拆分：英文部分用像素字体，中文部分用等宽字体（避免混排基线错位）
+const brandName = computed(() => {
+  const t = siteStore.title || 'hdochub 个人技术博客'
+  const m = t.match(/[a-zA-Z0-9][a-zA-Z0-9-]*/)
+  return m ? m[0] : 'hdochub'
+})
+const brandSuffix = computed(() => {
+  const t = siteStore.title || 'hdochub 个人技术博客'
+  const m = t.match(/[a-zA-Z0-9][a-zA-Z0-9-]*/)
+  const rest = m ? t.slice(m[0].length).trim() : t
+  return rest || siteStore.subtitle || ''
+})
+
 const route = useRoute()
 const router = useRouter()
 
@@ -84,8 +97,9 @@ useHead({
     <!-- Hero 标题区（像素字体，Neo-Brutalism 点缀） -->
     <div class="border-b-2 border-black bg-white">
       <div class="container-list py-8">
-        <h1 class="font-pixel text-h2 font-bold uppercase text-black">{{ siteStore.title || 'hdochub' }}</h1>
-        <p class="mt-4 font-mono text-body-ui text-ink-700">面向工程师的个人技术博客 · 记录问题、方案与观点</p>
+        <h1 class="font-pixel text-h2 font-bold uppercase text-black">{{ brandName }}</h1>
+        <p v-if="brandSuffix" class="mt-3 font-mono text-h4 font-bold text-black">{{ brandSuffix }}</p>
+        <p class="mt-1 font-mono text-body-ui text-ink-700">面向工程师的个人技术博客 · 记录问题、方案与观点</p>
       </div>
     </div>
 

@@ -3,6 +3,13 @@ const route = useRoute()
 const { isLoggedIn, isAdmin, displayName, avatar, logout } = useAuth()
 const siteStore = useSiteStore()
 
+// 品牌名英文部分（像素字体），避免与中文混排基线错位
+const brandName = computed(() => {
+  const t = siteStore.title || 'hdochub 个人技术博客'
+  const m = t.match(/[a-zA-Z0-9][a-zA-Z0-9-]*/)
+  return m ? m[0] : 'hdochub'
+})
+
 const mobileMenuOpen = ref(false)
 const searchKeyword = ref('')
 const userMenuOpen = ref(false)
@@ -51,7 +58,7 @@ async function handleLogout() {
       <!-- 左侧：站点标题 -->
       <div class="flex items-center gap-6">
         <NuxtLink to="/" class="font-pixel text-h5 font-bold uppercase tracking-wide border-2 border-transparent px-2 py-1 hover:bg-black hover:text-white transition-all duration-fast ease-linear">
-          {{ siteStore.title || 'hdochub' }}
+          {{ brandName }}
         </NuxtLink>
         <!-- 桌面端导航 -->
         <nav class="hidden md:flex items-center gap-0">
