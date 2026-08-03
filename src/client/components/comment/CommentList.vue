@@ -82,9 +82,10 @@ async function handleDelete(comment: Comment) {
 
 <template>
   <div>
-    <h3 class="mb-4 font-mono text-h4 font-bold uppercase border-b-2 border-black pb-2">
-      评论 ({{ formatNumber(comments.length) }})
+    <h3 class="border-b-2 border-black bg-violet px-4 py-2 font-mono text-small font-bold uppercase text-black">
+      评论 COMMENTS ({{ formatNumber(comments.length) }})
     </h3>
+    <div class="p-6">
 
     <!-- 评论输入框 -->
     <div class="mb-6">
@@ -122,6 +123,7 @@ async function handleDelete(comment: Comment) {
         @reply="handleReply"
         @delete="handleDelete"
       />
+      </div>
     </div>
   </div>
 </template>

@@ -141,21 +141,27 @@ useHead(() => ({
         </div>
 
         <!-- 正文 -->
-        <article class="mt-6 border-2 border-black bg-white p-6">
-          <MarkdownRenderer :content="article.content" />
+        <article class="mt-6 border-2 border-black bg-white">
+          <p class="border-b-2 border-black bg-cyan px-4 py-2 font-mono text-small font-bold uppercase text-black">正文 CONTENT</p>
+          <div class="p-6">
+            <MarkdownRenderer :content="article.content" />
+          </div>
         </article>
 
         <!-- 点赞区 -->
-        <div class="mt-6 border-2 border-black bg-white p-6 flex items-center justify-center">
-          <LikeButton
-            :count="likeInfo.count"
-            :liked="likeInfo.liked"
-            @toggle="toggleLike"
-          />
+        <div class="mt-6 border-2 border-black bg-white">
+          <p class="border-b-2 border-black bg-pink px-4 py-2 font-mono text-small font-bold uppercase text-black">点赞 LIKE</p>
+          <div class="p-6 flex items-center justify-center">
+            <LikeButton
+              :count="likeInfo.count"
+              :liked="likeInfo.liked"
+              @toggle="toggleLike"
+            />
+          </div>
         </div>
 
         <!-- 评论区 -->
-        <div class="mt-6 border-2 border-black bg-white p-6">
+        <div class="mt-6 border-2 border-black bg-white">
           <CommentList
             :article-slug="slug"
             :comments="comments"
