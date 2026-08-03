@@ -140,14 +140,21 @@ function validate(): boolean {
   return valid
 }
 
+// 发布/保存错误弹窗
+const errorModal = ref({ visible: false, message: '' })
+function showErrorModal(message: string) {
+  errorModal.value = { visible: true, message }
+}
+
 async function submit(status: 'DRAFT' | 'PUBLISHED') {
   form.status = status
   if (status === 'PUBLISHED' && !validate()) {
-    errorToast('请补全必填项')
+    const errList = [errors.title, errors.content, errors.categoryId].filter(Boolean).join('；')
+    showErrorModal(errList ? `请补全必填项：${errList}` : '请补全必填项')
     return
   }
   if (status === 'DRAFT' && !form.title.trim()) {
-    errorToast('请至少输入标题')
+    showErrorModal('请至少输入标题')
     return
   }
   submitting.value = true
@@ -162,7 +169,7 @@ async function submit(status: 'DRAFT' | 'PUBLISHED') {
       router.replace(`/dashboard/editor?slug=${created.slug}`)
     }
   } catch (err: any) {
-    errorToast(err.message || '保存失败')
+    showErrorModal(err.message || '保存失败')
   } finally {
     submitting.value = false
   }
@@ -302,5 +309,10 @@ useHead({ title: isEdit.value ? '编辑文章 - hdochub' : '写文章 - hdochub'
         />
       </div>
     </div>
+
+    <!-- 发布/保存错误弹窗 -->
+    <BModal :visible="errorModal.visible" title="操作失败" @close="errorModal.visible = false">
+      <p class="font-mono text-small">{{ errorModal.message }}</p>
+    </BModal>
   </div>
 </template>
