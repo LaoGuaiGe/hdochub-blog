@@ -81,6 +81,7 @@ export function readTime(wordCount: number): number {
  * 截断字符串
  */
 export function truncate(str: string, length: number): string {
+  if (!str) return ''
   if (str.length <= length) return str
   return str.slice(0, length) + '...'
 }

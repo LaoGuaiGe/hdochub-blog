@@ -38,7 +38,7 @@ function onEnter() {
 </script>
 
 <template>
-  <div class="flex w-full items-stretch border-2 border-black bg-white">
+  <div class="flex w-full items-stretch border-2 border-black bg-white shadow-px-2">
     <span class="flex items-center border-r-2 border-black px-3 font-mono text-small font-bold" :class="size === 'small' ? 'py-1' : 'py-2'">[Q]</span>
     <input
       :value="keyword"
