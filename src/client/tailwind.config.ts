@@ -22,6 +22,10 @@ export default <Partial<Config>>{
         yellow: {
           DEFAULT: '#FFFF00'
         },
+        accent: {
+          DEFAULT: '#FACC15',
+          hover: '#EAB308'
+        },
         green: {
           DEFAULT: '#008000'
         },
@@ -39,7 +43,8 @@ export default <Partial<Config>>{
       },
       fontFamily: {
         mono: ['ui-monospace', 'SFMono-Regular', "'SF Mono'", 'Menlo', 'Consolas', "'Liberation Mono'", "'Courier New'", 'monospace'],
-        sans: ["'Helvetica Neue'", 'Arial', "'PingFang SC'", "'Microsoft YaHei'", 'sans-serif']
+        sans: ["'Helvetica Neue'", 'Arial', "'PingFang SC'", "'Microsoft YaHei'", 'sans-serif'],
+        pixel: ['"Press Start 2P"', 'monospace']
       },
       borderRadius: {
         none: '0',
@@ -58,7 +63,10 @@ export default <Partial<Config>>{
         md: 'none',
         lg: 'none',
         xl: 'none',
-        inner: 'none'
+        inner: 'none',
+        'px-1': '2px 2px 0 0 #000000',
+        'px-2': '3px 3px 0 0 #000000',
+        'px-3': '4px 4px 0 0 #000000'
       },
       transitionDuration: {
         DEFAULT: '0.05s',

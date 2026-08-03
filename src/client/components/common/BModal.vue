@@ -28,7 +28,7 @@ function onClose() {
       @click.self="onClose"
     >
       <div
-        class="border-4 border-black bg-white"
+        class="border-4 border-black bg-white shadow-px-3"
         :style="{ width: width + 'px', maxWidth: '100%' }"
       >
         <div v-if="title" class="flex items-center justify-between bg-black px-4 py-2 text-white">

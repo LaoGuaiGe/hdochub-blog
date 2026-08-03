@@ -50,7 +50,7 @@ async function handleLogout() {
     <div class="container-list flex h-16 items-center justify-between gap-4">
       <!-- 左侧：站点标题 -->
       <div class="flex items-center gap-6">
-        <NuxtLink to="/" class="font-mono text-h5 font-bold uppercase tracking-wide border-2 border-transparent px-2 py-1 hover:bg-black hover:text-white transition-all duration-fast ease-linear">
+        <NuxtLink to="/" class="font-pixel text-h5 font-bold uppercase tracking-wide border-2 border-transparent px-2 py-1 hover:bg-black hover:text-white transition-all duration-fast ease-linear">
           {{ siteStore.title || 'hdochub' }}
         </NuxtLink>
         <!-- 桌面端导航 -->

@@ -2,6 +2,8 @@
 import type { ArticleListItem, Category, Tag, Paginated, ArticleListQuery } from '~/types'
 import { articleApi, categoryApi, tagApi } from '~/utils/api'
 
+const siteStore = useSiteStore()
+
 const route = useRoute()
 const router = useRouter()
 
@@ -79,6 +81,14 @@ useHead({
 
 <template>
   <div>
+    <!-- Hero 标题区（像素字体，Neo-Brutalism 点缀） -->
+    <div class="border-b-2 border-black bg-white">
+      <div class="container-list py-8">
+        <h1 class="font-pixel text-h2 font-bold uppercase text-black">{{ siteStore.title || 'hdochub' }}</h1>
+        <p class="mt-4 font-mono text-body-ui text-ink-700">面向工程师的个人技术博客 · 记录问题、方案与观点</p>
+      </div>
+    </div>
+
     <!-- 排序工具栏 -->
     <div class="border-b-2 border-black bg-white">
       <div class="container-list py-3">
