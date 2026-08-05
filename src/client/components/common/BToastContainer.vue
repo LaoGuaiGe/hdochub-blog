@@ -1,20 +1,27 @@
 <script setup lang="ts">
 const { toasts, dismiss } = useToast()
+
+const tagMap: Record<string, string> = {
+  success: 'OK',
+  warning: '!',
+  error: 'X',
+  info: 'i'
+}
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="fixed right-4 top-20 z-[100] flex flex-col gap-2" style="width: 320px; max-width: calc(100vw - 32px);">
+    <div class="fixed right-6 top-20 z-[100] flex flex-col gap-3" style="width: 380px; max-width: calc(100vw - 32px);">
       <transition-group name="toast">
         <div
           v-for="toast in toasts"
           :key="toast.id"
-          :class="`alert-${toast.type}`"
-          class="cursor-pointer flex items-center justify-between"
+          class="toast-brutal cursor-pointer"
+          :class="toast.type"
           @click="dismiss(toast.id)"
         >
-          <span>{{ toast.message }}</span>
-          <span class="ml-2">×</span>
+          <div class="toast-brutal-tag">{{ tagMap[toast.type] }}</div>
+          <div class="toast-brutal-body">{{ toast.message }}</div>
         </div>
       </transition-group>
     </div>
@@ -22,12 +29,23 @@ const { toasts, dismiss } = useToast()
 </template>
 
 <style scoped>
-.toast-enter-active,
-.toast-leave-active {
-  transition: opacity 0.05s linear;
+.toast-enter-active {
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s linear;
 }
-.toast-enter-from,
+.toast-leave-active {
+  transition: transform 0.15s cubic-bezier(0.6, 0, 0.8, 0.2), opacity 0.15s linear;
+  position: absolute;
+  width: 100%;
+}
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(120%);
+}
 .toast-leave-to {
   opacity: 0;
+  transform: translateX(120%);
+}
+.toast-move {
+  transition: transform 0.18s ease;
 }
 </style>

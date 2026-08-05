@@ -25,6 +25,20 @@ export enum FriendLinkStatus {
   HIDDEN = 'HIDDEN',
 }
 
+// 友链申请状态枚举
+export enum FriendLinkApplicationStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+// 资源状态枚举
+export enum ResourceStatus {
+  PUBLISHED = 'PUBLISHED',
+  DRAFT = 'DRAFT',
+  OFFLINE = 'OFFLINE',
+}
+
 // 文件用途枚举
 export enum FilePurpose {
   AVATAR = 'AVATAR',

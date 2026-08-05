@@ -18,6 +18,7 @@ const form = reactive<ArticlePayload>({
   categoryId: 0,
   tags: [],
   coverImage: null,
+  coverConfig: null,
   excerpt: '',
   status: 'DRAFT'
 })
@@ -35,6 +36,7 @@ const tagInput = ref('')
 const showMeta = ref(true)
 const submitting = ref(false)
 const coverUrlInput = ref('')
+const coverMode = ref<'image' | 'design'>('image')
 
 const wordCount = computed(() => countWords(form.content))
 
@@ -61,9 +63,11 @@ if (isEdit.value) {
       form.categoryId = val.categoryId
       form.tags = val.tags.map(t => t.name)
       form.coverImage = val.coverImage
+      form.coverConfig = val.coverConfig
       form.excerpt = val.excerpt
       form.status = val.status === 'DELETED' ? 'DRAFT' : val.status
       if (val.coverImage) coverUrlInput.value = val.coverImage
+      coverMode.value = val.coverConfig ? 'design' : 'image'
     }
   }, { immediate: true })
 }
@@ -97,16 +101,28 @@ function selectExistingTag(tag: Tag) {
 
 function applyCoverUrl() {
   form.coverImage = coverUrlInput.value || null
+  form.coverConfig = null
 }
 
 async function handleUploadCover(file: File) {
   try {
-    const res = await uploadApi.image(file)
+    const res = await uploadApi.image(file, 'COVER')
     form.coverImage = res.url
     coverUrlInput.value = res.url
+    form.coverConfig = null
+    coverMode.value = 'image'
     success('封面上传成功')
   } catch (err: any) {
     errorToast(err.message || '上传失败')
+  }
+}
+
+function switchCoverMode(mode: 'image' | 'design') {
+  coverMode.value = mode
+  if (mode === 'design') {
+    form.coverImage = null
+  } else {
+    form.coverConfig = null
   }
 }
 
@@ -279,24 +295,52 @@ useHead({ title: isEdit.value ? '编辑文章 - hdochub' : '写文章 - hdochub'
           <p class="form-help">每篇最多 10 个标签，每个标签 2-20 字符</p>
         </div>
 
-        <!-- 封面图 -->
+        <!-- 封面 -->
         <div>
-          <label class="label">封面图</label>
-          <div class="flex flex-wrap items-center gap-2">
-            <input
-              v-model="coverUrlInput"
-              type="text"
-              placeholder="填写图片外链 URL"
-              class="input flex-1 min-w-[200px]"
+          <label class="label">文章封面</label>
+          <!-- 模式切换 -->
+          <div class="mb-3 flex gap-2">
+            <button
+              type="button"
+              class="flex-1 border-2 border-black px-3 py-2 font-mono text-tiny font-bold transition-all duration-fast ease-linear"
+              :class="coverMode === 'image' ? 'bg-black text-white' : 'bg-white text-black hover:bg-yellow'"
+              @click="switchCoverMode('image')"
             >
-            <button type="button" class="btn-secondary !py-2" @click="applyCoverUrl">应用</button>
-            <label class="btn-secondary !py-2 cursor-pointer">
-              上传图片
-              <input type="file" accept="image/*" class="hidden" @change="onFileChange">
-            </label>
+              上传 / 外链图片
+            </button>
+            <button
+              type="button"
+              class="flex-1 border-2 border-black px-3 py-2 font-mono text-tiny font-bold transition-all duration-fast ease-linear"
+              :class="coverMode === 'design' ? 'bg-black text-white' : 'bg-white text-black hover:bg-yellow'"
+              @click="switchCoverMode('design')"
+            >
+              野兽派封面设计器
+            </button>
           </div>
-          <div v-if="form.coverImage" class="mt-2 border-2 border-black">
-            <img :src="form.coverImage" alt="封面" class="w-full max-h-48 object-cover">
+
+          <!-- 图片模式 -->
+          <div v-if="coverMode === 'image'">
+            <div class="flex flex-wrap items-center gap-2">
+              <input
+                v-model="coverUrlInput"
+                type="text"
+                placeholder="填写图片外链 URL"
+                class="input flex-1 min-w-[200px]"
+              >
+              <button type="button" class="btn-secondary !py-2" @click="applyCoverUrl">应用</button>
+              <label class="btn-secondary !py-2 cursor-pointer">
+                上传图片
+                <input type="file" accept="image/*" class="hidden" @change="onFileChange">
+              </label>
+            </div>
+            <div v-if="form.coverImage" class="mt-2 border-2 border-black">
+              <img :src="form.coverImage" alt="封面" class="w-full max-h-48 object-cover">
+            </div>
+          </div>
+
+          <!-- 设计器模式 -->
+          <div v-if="coverMode === 'design'">
+            <BrutalismCoverDesigner v-model="form.coverConfig" :title="form.title" />
           </div>
         </div>
 

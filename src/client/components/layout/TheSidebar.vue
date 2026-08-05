@@ -25,6 +25,8 @@ const adminMenus = [
   { label: '标签管理', path: '/admin/tags', icon: '[T]' },
   { label: '评论管理', path: '/admin/comments', icon: '[>]' },
   { label: '用户管理', path: '/admin/users', icon: '[U]' },
+  { label: '资源管理', path: '/admin/resources', icon: '[R]' },
+  { label: '友链管理', path: '/admin/friend-links', icon: '[F]' },
   { label: '站点设置', path: '/admin/settings', icon: '[S]' }
 ]
 

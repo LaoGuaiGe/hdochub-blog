@@ -81,6 +81,7 @@ export interface Article {
   content: string
   excerpt: string
   coverImage: string | null
+  coverConfig: string | null
   status: ArticleStatus
   author: User
   authorId: number
@@ -103,6 +104,7 @@ export interface ArticleListItem {
   slug: string
   excerpt: string
   coverImage: string | null
+  coverConfig: string | null
   status: ArticleStatus
   authorId: number
   authorName: string
@@ -211,6 +213,8 @@ export interface RegisterPayload {
   email: string
   password: string
   confirmPassword: string
+  captcha: string
+  captchaId: string
 }
 
 export interface AuthResult {
@@ -225,6 +229,7 @@ export interface ArticlePayload {
   categoryId: number
   tags: string[]
   coverImage?: string | null
+  coverConfig?: string | null
   excerpt?: string
   status: ArticleStatus
 }
@@ -240,4 +245,51 @@ export interface TocItem {
 export interface SelectOption {
   label: string
   value: string | number
+}
+
+// 野兽派封面配置（JSON 字符串存储）
+export interface CoverConfig {
+  variant: string      // 背景样式编号 1-6
+  fontSize: number     // 标题字号 px
+  align: 'left' | 'center' | 'right'
+}
+
+// 友链申请
+export interface FriendLinkApplication {
+  id: number
+  name: string
+  url: string
+  description: string | null
+  contactName: string | null
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  rejectReason: string | null
+  createdAt: string
+  reviewedAt: string | null
+}
+
+// 资源
+export interface Resource {
+  id: number
+  title: string
+  description: string | null
+  coverImage: string | null
+  panType: string
+  downloadCount: number
+  createdAt: string
+}
+
+export interface ResourceDetail extends Resource {
+  downloadUrl: string
+  extractionCode: string | null
+  content: string | null
+  contentHtml: string | null
+  sort: number
+  status: string
+  updatedAt: string
+}
+
+// 注册验证码
+export interface CaptchaInfo {
+  captchaId: string
+  svg: string
 }

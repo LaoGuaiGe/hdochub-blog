@@ -14,9 +14,11 @@ import {
 // 注册 DTO
 export class RegisterDto {
   @IsString()
-  @MinLength(3, { message: '用户名长度需在 3-20 字符之间' })
-  @MaxLength(20, { message: '用户名长度需在 3-20 字符之间' })
-  @Matches(/^[a-zA-Z0-9_]+$/, { message: '用户名仅允许字母、数字、下划线' })
+  @MinLength(2, { message: '用户名长度需在 2-20 字符之间' })
+  @MaxLength(20, { message: '用户名长度需在 2-20 字符之间' })
+  @Matches(/^[\u4e00-\u9fa5a-zA-Z0-9_]+$/, {
+    message: '用户名仅允许中文、字母、数字、下划线',
+  })
   username: string;
 
   @IsEmail({}, { message: '邮箱格式不正确' })
@@ -37,9 +39,11 @@ export class RegisterDto {
   @IsString()
   confirmPassword: string;
 
-  @IsOptional()
-  @IsString()
-  captcha?: string;
+  @IsString({ message: '验证码不能为空' })
+  captcha: string;
+
+  @IsString({ message: '验证码标识不能为空' })
+  captchaId: string;
 }
 
 // 登录 DTO

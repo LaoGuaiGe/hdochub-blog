@@ -23,7 +23,6 @@ const { data: commentsData, refresh: refreshComments } = await useAsyncData(
   () => `article-comments-${slug.value}`,
   () => commentApi.list(slug.value)
 )
-// 评论接口返回 { list, pagination }，需解包 list
 const comments = computed(() => commentsData.value?.list || [])
 
 const { data: related } = await useAsyncData(
@@ -31,7 +30,6 @@ const { data: related } = await useAsyncData(
   () => articleApi.related(slug.value)
 )
 
-// BUG-017: 上一篇/下一篇通过独立接口获取
 const { data: adjacent } = await useAsyncData(
   () => `article-adjacent-${slug.value}`,
   () => articleApi.adjacent(slug.value)
@@ -81,40 +79,54 @@ useHead(() => ({
 <template>
   <div v-if="article" class="container-list py-6">
     <!-- 面包屑 -->
-    <nav class="mb-6 flex items-center gap-2 font-mono text-tiny">
-      <NuxtLink to="/" class="border-b-2 border-transparent hover:border-black hover:bg-black hover:text-white px-1 transition-all duration-fast ease-linear">首页</NuxtLink>
+    <nav class="mb-6 flex flex-wrap items-center gap-2 font-mono text-tiny">
+      <NuxtLink to="/" class="border-2 border-transparent px-1 py-0.5 transition-all duration-fast ease-linear hover:border-black hover:bg-black hover:text-white">首页</NuxtLink>
       <span class="text-ink-500">&gt;</span>
-      <NuxtLink :to="`/category/${article.category.slug}`" class="border-b-2 border-transparent hover:border-black hover:bg-black hover:text-white px-1 transition-all duration-fast ease-linear">{{ article.category.name }}</NuxtLink>
+      <NuxtLink :to="`/category/${article.category.slug}`" class="border-2 border-transparent px-1 py-0.5 transition-all duration-fast ease-linear hover:border-black hover:bg-black hover:text-white">{{ article.category.name }}</NuxtLink>
       <span class="text-ink-500">&gt;</span>
-      <span class="text-ink-700">{{ article.title }}</span>
+      <span class="bg-yellow px-1 py-0.5 font-bold">{{ article.title }}</span>
     </nav>
 
     <div class="flex flex-col lg:flex-row gap-6">
       <!-- 主内容 -->
       <div class="flex-1 min-w-0 lg:max-w-content">
-        <!-- 文章头部 -->
+        <!-- 文章头部卡片 -->
         <div class="border-2 border-black bg-white">
-          <!-- 封面图 -->
+          <!-- 封面：野兽派设计 或 图片 -->
+          <BrutalismCover
+            v-if="article.coverConfig"
+            :config="article.coverConfig"
+            :title="article.title"
+          />
           <img
-            v-if="article.coverImage"
+            v-else-if="article.coverImage"
             :src="article.coverImage"
             :alt="article.title"
             class="w-full border-b-2 border-black object-cover"
-            style="max-height: 400px;"
+            style="max-height: 420px;"
           >
 
-          <div class="p-6">
-            <div class="mb-4 flex items-center gap-2">
-              <NuxtLink :to="`/category/${article.category.slug}`" class="tag-category">
+          <!-- 标题区 -->
+          <div class="border-b-2 border-black bg-yellow px-6 py-4">
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+              <NuxtLink :to="`/category/${article.category.slug}`" class="tag-solid">
                 {{ article.category.name }}
               </NuxtLink>
+              <span class="badge bg-white">阅读 {{ formatNumber(article.viewCount) }}</span>
+              <span class="badge bg-white">{{ wordCount }}字</span>
+              <span class="badge bg-white">{{ readMinutes }}分钟</span>
             </div>
+            <h1 class="font-mono text-h1 font-bold leading-tight">{{ article.title }}</h1>
+          </div>
 
-            <h1 class="font-mono text-h1 font-bold leading-tight mb-4">
-              {{ article.title }}
-            </h1>
-
-            <div class="mb-4 flex flex-wrap gap-1">
+          <!-- 作者信息条 -->
+          <div class="flex flex-wrap items-center gap-3 px-6 py-3">
+            <BAvatar :src="article.author.avatar" :name="article.author.nickname || article.author.username" :size="36" />
+            <div class="flex flex-col">
+              <span class="font-mono text-small font-bold">{{ article.author.nickname || article.author.username }}</span>
+              <span class="font-mono text-tiny text-ink-500">发布于 {{ formatDate(article.publishedAt) }}</span>
+            </div>
+            <div class="ml-auto flex flex-wrap gap-1">
               <NuxtLink
                 v-for="tag in article.tags"
                 :key="tag.id"
@@ -124,27 +136,17 @@ useHead(() => ({
                 #{{ tag.name }}
               </NuxtLink>
             </div>
-
-            <div class="flex flex-wrap items-center gap-3 border-t-2 border-black pt-4">
-              <BAvatar :src="article.author.avatar" :name="article.author.nickname || article.author.username" :size="32" />
-              <span class="font-mono text-small font-bold">{{ article.author.nickname || article.author.username }}</span>
-              <span class="font-mono text-tiny text-ink-500">·</span>
-              <span class="font-mono text-tiny text-ink-500">{{ formatDate(article.publishedAt) }}</span>
-              <span class="font-mono text-tiny text-ink-500">·</span>
-              <span class="font-mono text-tiny text-ink-500">阅读 {{ formatNumber(article.viewCount) }}</span>
-              <span class="font-mono text-tiny text-ink-500">·</span>
-              <span class="font-mono text-tiny text-ink-500">{{ wordCount }}字</span>
-              <span class="font-mono text-tiny text-ink-500">·</span>
-              <span class="font-mono text-tiny text-ink-500">阅读{{ readMinutes }}分钟</span>
-            </div>
           </div>
         </div>
 
         <!-- 正文 -->
         <article class="mt-6 border-2 border-black bg-white">
-          <p class="border-b-2 border-black bg-cyan px-4 py-2 font-mono text-small font-bold uppercase text-black">正文 CONTENT</p>
-          <div class="p-6">
-            <MarkdownRenderer :content="article.content" />
+          <div class="flex items-center justify-between border-b-2 border-black bg-black px-4 py-2 text-white">
+            <span class="font-mono text-small font-bold uppercase">正文 CONTENT</span>
+            <span class="font-mono text-tiny text-yellow">{{ article.wordCount }} WORDS</span>
+          </div>
+          <div class="p-6 md:p-8">
+            <div class="prose-brutal" v-html="html"></div>
           </div>
         </article>
 

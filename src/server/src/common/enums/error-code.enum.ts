@@ -35,6 +35,8 @@ export enum ErrorCode {
   TAG_NOT_FOUND = 40403,
   COMMENT_NOT_FOUND = 40404,
   USER_NOT_FOUND = 40405,
+  RESOURCE_NOT_FOUND = 40406,
+  APPLICATION_NOT_FOUND = 40407,
 
   // 冲突 409xx
   ALREADY_LIKED = 40901,
@@ -81,6 +83,8 @@ export const ERROR_MESSAGES: Record<number, string> = {
   [ErrorCode.TAG_NOT_FOUND]: '标签不存在',
   [ErrorCode.COMMENT_NOT_FOUND]: '评论不存在',
   [ErrorCode.USER_NOT_FOUND]: '用户不存在',
+  [ErrorCode.RESOURCE_NOT_FOUND]: '资源不存在',
+  [ErrorCode.APPLICATION_NOT_FOUND]: '申请不存在',
   [ErrorCode.ALREADY_LIKED]: '已点赞，请勿重复操作',
   [ErrorCode.DUPLICATE_COMMENT]: '评论内容重复',
   [ErrorCode.FILE_TOO_LARGE]: '文件大小超过限制（最大 5MB）',

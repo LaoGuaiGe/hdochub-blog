@@ -26,6 +26,8 @@ const quickLinks = [
   { label: '评论管理', path: '/admin/comments' },
   { label: '分类管理', path: '/admin/categories' },
   { label: '标签管理', path: '/admin/tags' },
+  { label: '资源管理', path: '/admin/resources' },
+  { label: '友链管理', path: '/admin/friend-links' },
   { label: '站点设置', path: '/admin/settings' }
 ]
 

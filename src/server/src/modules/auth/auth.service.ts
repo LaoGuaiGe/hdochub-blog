@@ -13,6 +13,7 @@ import { Role } from '../../common/enums/role.enum';
 import { UserStatus } from '../../common/enums/status.enum';
 import { JwtPayload } from '../../common/decorators/current-user.decorator';
 import { getClientIp } from '../../common/utils';
+import { CaptchaService } from '../captcha/captcha.service';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
     private configService: ConfigService,
     private redisService: RedisService,
     private cacheService: CacheService,
+    private captchaService: CaptchaService,
   ) {}
 
   // 注册
@@ -35,6 +37,12 @@ export class AuthService {
     const registrationEnabled = await this.getSetting('registration_enabled');
     if (registrationEnabled === 'false') {
       throw new BusinessException(ErrorCode.REGISTRATION_CLOSED);
+    }
+
+    // 校验图形验证码（防止批量注册）
+    const captchaOk = await this.captchaService.verify(dto.captchaId, dto.captcha);
+    if (!captchaOk) {
+      throw new BusinessException(ErrorCode.CAPTCHA_WRONG);
     }
 
     // 校验用户名

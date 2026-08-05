@@ -1,6 +1,5 @@
 // 验证码控制器
-import { Controller, Get, Query, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get } from '@nestjs/common';
 import { CaptchaService } from './captcha.service';
 import { Public } from '../../common/decorators';
 
@@ -8,13 +7,10 @@ import { Public } from '../../common/decorators';
 export class CaptchaController {
   constructor(private readonly captchaService: CaptchaService) {}
 
-  // 获取验证码图片
+  // 获取验证码（返回 captchaId + SVG，前端内联渲染）
   @Public()
   @Get()
-  async getCaptcha(@Res() res: Response) {
-    const { captchaId, svg } = await this.captchaService.generate();
-    res.type('image/svg+xml');
-    res.setHeader('X-Captcha-Id', captchaId);
-    res.send(svg);
+  async getCaptcha() {
+    return this.captchaService.generate();
   }
 }

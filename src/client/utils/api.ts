@@ -9,6 +9,10 @@ import type {
   Comment,
   User,
   FriendLink,
+  FriendLinkApplication,
+  Resource,
+  ResourceDetail,
+  CaptchaInfo,
   SiteSettings,
   DashboardStats,
   AdminStats,
@@ -131,7 +135,15 @@ export const friendLinkApi = {
   // BUG-016: 创建/更新/删除友链路径 /friend-links/... -> /admin/friend-links/...
   create: (data: Omit<FriendLink, 'id' | 'createdAt'>) => post<FriendLink>('/admin/friend-links', data),
   update: (id: number, data: Partial<FriendLink>) => put<FriendLink>(`/admin/friend-links/${id}`, data),
-  delete: (id: number) => del(`/admin/friend-links/${id}`)
+  delete: (id: number) => del(`/admin/friend-links/${id}`),
+  // 友链申请
+  apply: (data: { name: string; url: string; description?: string; contactName?: string }) =>
+    post('/friend-links/applications', data),
+  applications: (status?: string) => get<FriendLinkApplication[]>('/admin/friend-links/applications', status ? { status } : {}),
+  approveApplication: (id: number) => put(`/admin/friend-links/applications/${id}/approve`),
+  rejectApplication: (id: number, rejectReason?: string) =>
+    put(`/admin/friend-links/applications/${id}/reject`, { rejectReason }),
+  deleteApplication: (id: number) => del(`/admin/friend-links/applications/${id}`)
 }
 
 // ========== 站点设置 ==========
@@ -146,11 +158,29 @@ export const pageApi = {
   about: () => get<{ content: string }>('/pages/about')
 }
 
+// ========== 验证码 ==========
+export const captchaApi = {
+  get: () => get<CaptchaInfo>('/captcha')
+}
+
+// ========== 资源 ==========
+export const resourceApi = {
+  list: () => get<Resource[]>('/resources'),
+  detail: (id: number) => get<ResourceDetail>(`/resources/${id}`),
+  download: (id: number) => post<{ downloadUrl: string; extractionCode: string | null; panType: string }>(`/resources/${id}/download`),
+  // 管理员
+  adminList: () => get<ResourceDetail[]>('/admin/resources'),
+  create: (data: Partial<ResourceDetail>) => post<ResourceDetail>('/admin/resources', data),
+  update: (id: number, data: Partial<ResourceDetail>) => put<ResourceDetail>(`/admin/resources/${id}`, data),
+  delete: (id: number) => del(`/admin/resources/${id}`)
+}
+
 // ========== 上传 ==========
 export const uploadApi = {
-  image: (file: File) => {
+  image: (file: File, purpose?: string) => {
     const formData = new FormData()
     formData.append('file', file)
+    if (purpose) formData.append('purpose', purpose)
     return post<{ url: string }>('/uploads', formData)
   }
 }
@@ -167,6 +197,8 @@ export const api = {
   friendLink: friendLinkApi,
   settings: settingsApi,
   page: pageApi,
+  captcha: captchaApi,
+  resource: resourceApi,
   upload: uploadApi
 }
 

@@ -23,6 +23,7 @@ import { FriendLinksModule } from './modules/friend-links/friend-links.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { RssModule } from './modules/rss/rss.module';
 import { CaptchaModule } from './modules/captcha/captcha.module';
+import { ResourcesModule } from './modules/resources/resources.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { CaptchaModule } from './modules/captcha/captcha.module';
     FriendLinksModule,
     RssModule,
     CaptchaModule,
+    ResourcesModule,
   ],
 })
 export class AppModule {}

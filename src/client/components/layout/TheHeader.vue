@@ -19,6 +19,7 @@ const navItems = [
   { label: '分类', path: '/category' },
   { label: '标签', path: '/tag' },
   { label: '归档', path: '/archive' },
+  { label: '资源', path: '/resources' },
   { label: '关于', path: '/about' },
   { label: '友链', path: '/links' }
 ]

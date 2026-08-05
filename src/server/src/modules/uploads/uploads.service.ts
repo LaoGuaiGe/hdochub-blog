@@ -89,9 +89,8 @@ export class UploadsService {
       throw new BusinessException(ErrorCode.UPLOAD_FAILED);
     }
 
-    // 生成访问 URL
-    const siteUrl = this.configService.get<string>('site.url') || '';
-    const fileUrl = `${siteUrl}/uploads/${relativePath}`;
+    // 生成访问 URL（返回相对路径，便于在任意域名/代理下访问）
+    const fileUrl = `/uploads/${relativePath}`;
 
     // 获取图片尺寸（简化：不解析，返回 null）
     const width = null;

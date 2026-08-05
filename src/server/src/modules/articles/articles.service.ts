@@ -182,6 +182,7 @@ export class ArticlesService {
         slug: true,
         summary: true,
         coverImage: true,
+        coverConfig: true,
         publishedAt: true,
       },
       distinct: ['id'],
@@ -277,6 +278,7 @@ export class ArticlesService {
           contentHtml,
           summary,
           coverImage: dto.coverImage || null,
+          coverConfig: dto.coverConfig || null,
           authorId: BigInt(userId),
           categoryId: BigInt(dto.categoryId),
           status: dto.status,
@@ -367,6 +369,7 @@ export class ArticlesService {
     if (dto.summary !== undefined) data.summary = dto.summary;
     else if (dto.content) data.summary = extractSummary(dto.content, 200);
     if (dto.coverImage !== undefined) data.coverImage = dto.coverImage;
+    if (dto.coverConfig !== undefined) data.coverConfig = dto.coverConfig;
     if (dto.categoryId !== undefined) {
       data.category = { connect: { id: BigInt(dto.categoryId) } };
     }
@@ -861,6 +864,7 @@ export class ArticlesService {
       slug: true,
       summary: true,
       coverImage: true,
+      coverConfig: true,
       viewCount: true,
       likeCount: true,
       commentCount: true,
@@ -892,6 +896,7 @@ export class ArticlesService {
       slug: a.slug,
       summary: a.summary,
       coverImage: a.coverImage,
+      coverConfig: a.coverConfig,
       category: a.category
         ? { id: Number(a.category.id), name: a.category.name, slug: a.category.slug }
         : null,
@@ -936,6 +941,7 @@ export class ArticlesService {
       contentHtml: article.contentHtml,
       summary: article.summary,
       coverImage: article.coverImage,
+      coverConfig: article.coverConfig,
       category: article.category
         ? {
             ...article.category,

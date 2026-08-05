@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RegisterPayload } from '~/types'
-import { authApi } from '~/utils/api'
+import { authApi, captchaApi } from '~/utils/api'
 import { passwordStrength } from '~/utils/format'
 
 definePageMeta({ layout: 'default' })
@@ -12,24 +12,41 @@ const form = reactive<RegisterPayload>({
   username: '',
   email: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  captcha: '',
+  captchaId: ''
 })
 
 const errors = reactive({
   username: '',
   email: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  captcha: ''
 })
 const submitting = ref(false)
 
 const strength = computed(() => passwordStrength(form.password))
 
+// 验证码
+const captchaSvg = ref('')
+async function refreshCaptcha() {
+  try {
+    const res = await captchaApi.get()
+    captchaSvg.value = res.svg
+    form.captchaId = res.captchaId
+    form.captcha = ''
+  } catch (err: any) {
+    errorToast(err.message || '验证码加载失败')
+  }
+}
+onMounted(refreshCaptcha)
+
 function validateUsername(): boolean {
   if (!form.username) {
     errors.username = '请输入用户名'
-  } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.username)) {
-    errors.username = '3-20字符，仅允许字母、数字、下划线'
+  } else if (!/^[\u4e00-\u9fa5a-zA-Z0-9_]{2,20}$/.test(form.username)) {
+    errors.username = '2-20字符，支持中文/字母/数字/下划线'
   } else {
     errors.username = ''
   }
@@ -71,12 +88,22 @@ function validateConfirmPassword(): boolean {
   return !errors.confirmPassword
 }
 
+function validateCaptcha(): boolean {
+  if (!form.captcha) {
+    errors.captcha = '请输入验证码'
+  } else {
+    errors.captcha = ''
+  }
+  return !errors.captcha
+}
+
 function validate(): boolean {
   const v1 = validateUsername()
   const v2 = validateEmail()
   const v3 = validatePassword()
   const v4 = validateConfirmPassword()
-  return v1 && v2 && v3 && v4
+  const v5 = validateCaptcha()
+  return v1 && v2 && v3 && v4 && v5
 }
 
 async function onSubmit() {
@@ -89,6 +116,7 @@ async function onSubmit() {
     await navigateTo('/dashboard')
   } catch (err: any) {
     errorToast(err.message || '注册失败')
+    refreshCaptcha()
   } finally {
     submitting.value = false
   }
@@ -111,9 +139,9 @@ useHead({ title: '注册 - hdochub' })
             v-model="form.username"
             label="用户名"
             required
-            placeholder="3-20字符，字母数字下划线"
+            placeholder="支持中文、字母、数字、下划线"
             :error="errors.username"
-            help="3-20字符，仅允许字母、数字、下划线"
+            help="2-20字符，支持中文/字母/数字/下划线"
             autocomplete="username"
             @blur="validateUsername"
           />
@@ -165,6 +193,34 @@ useHead({ title: '注册 - hdochub' })
             autocomplete="new-password"
             @blur="validateConfirmPassword"
           />
+
+          <!-- 验证码 -->
+          <div>
+            <label class="label">图形验证码</label>
+            <div class="flex items-stretch gap-2">
+              <input
+                v-model="form.captcha"
+                type="text"
+                placeholder="输入验证码"
+                maxlength="4"
+                autocomplete="off"
+                class="input flex-1 uppercase"
+                :class="{ 'input-error': errors.captcha }"
+                @blur="validateCaptcha"
+              >
+              <button
+                type="button"
+                class="border-2 border-black bg-white px-2 transition-all duration-fast ease-linear hover:bg-yellow"
+                style="height: 56px;"
+                title="点击刷新验证码"
+                @click="refreshCaptcha"
+              >
+                <div v-html="captchaSvg" class="h-full flex items-center" />
+              </button>
+            </div>
+            <p v-if="errors.captcha" class="form-error">{{ errors.captcha }}</p>
+            <p class="form-help">看不清？点击图片刷新</p>
+          </div>
 
           <BButton type="primary" html-type="submit" block :loading="submitting">
             注册

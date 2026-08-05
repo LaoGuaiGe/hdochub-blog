@@ -82,6 +82,7 @@ model Article {
   contentHtml   String?   @db.LongText @map("content_html")
   summary       String?   @db.VarChar(500)
   coverImage    String?   @db.VarChar(255) @map("cover_image")
+  coverConfig   String?   @db.Text @map("cover_config")
   authorId      BigInt    @map("author_id")
   categoryId    BigInt    @map("category_id")
   status        String    @default("DRAFT") @db.VarChar(20)
@@ -232,4 +233,41 @@ model UploadFile {
   @@index([userId], map: "idx_upload_user_id")
   @@index([purpose], map: "idx_upload_purpose")
   @@map("upload_files")
+}
+
+// ==================== 友链申请表 ====================
+model FriendLinkApplication {
+  id           BigInt    @id @default(autoincrement())
+  name         String    @db.VarChar(50)
+  url          String    @db.VarChar(255)
+  description  String?   @db.VarChar(500)
+  contactName  String?   @db.VarChar(50) @map("contact_name")
+  status       String    @default("PENDING") @db.VarChar(20)
+  rejectReason String?   @db.VarChar(255) @map("reject_reason")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  reviewedAt   DateTime? @map("reviewed_at")
+
+  @@index([status, createdAt], map: "idx_fla_status_created")
+  @@map("friend_link_applications")
+}
+
+// ==================== 资源表 ====================
+model Resource {
+  id              BigInt    @id @default(autoincrement())
+  title           String    @db.VarChar(100)
+  description     String?   @db.Text
+  coverImage      String?   @db.VarChar(255) @map("cover_image")
+  downloadUrl     String    @db.VarChar(500) @map("download_url")
+  extractionCode  String?   @db.VarChar(50) @map("extraction_code")
+  panType         String    @default("baidu") @db.VarChar(20) @map("pan_type")
+  content         String?   @db.LongText
+  contentHtml     String?   @db.LongText @map("content_html")
+  downloadCount   Int       @default(0) @map("download_count")
+  sort            Int       @default(0)
+  status          String    @default("PUBLISHED") @db.VarChar(20)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([status, sort], map: "idx_resource_status_sort")
+  @@map("resources")
 }

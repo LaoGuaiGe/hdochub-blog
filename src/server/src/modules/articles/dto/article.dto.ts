@@ -42,6 +42,10 @@ export class CreateArticleDto {
   @IsString()
   coverImage?: string;
 
+  @IsOptional()
+  @IsString()
+  coverConfig?: string;
+
   @IsString()
   @IsIn([ArticleStatus.DRAFT, ArticleStatus.PUBLISHED])
   status: string;
@@ -78,6 +82,10 @@ export class UpdateArticleDto {
   @IsOptional()
   @IsString()
   coverImage?: string;
+
+  @IsOptional()
+  @IsString()
+  coverConfig?: string;
 
   @IsOptional()
   @IsString()
