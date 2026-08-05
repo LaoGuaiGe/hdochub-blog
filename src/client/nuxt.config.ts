@@ -58,6 +58,14 @@ export default defineNuxtConfig({
         target: 'http://localhost:4000/robots.txt',
         changeOrigin: true
       }
+    },
+    // 生产环境反向代理（无 Nginx 时由 Nitro 直接代理到后端）
+    routeRules: {
+      '/api/**': { proxy: 'http://127.0.0.1:4000/api/**' },
+      '/uploads/**': { proxy: 'http://127.0.0.1:4000/uploads/**' },
+      '/rss.xml': { proxy: 'http://127.0.0.1:4000/rss.xml' },
+      '/sitemap.xml': { proxy: 'http://127.0.0.1:4000/sitemap.xml' },
+      '/robots.txt': { proxy: 'http://127.0.0.1:4000/robots.txt' }
     }
   },
   typescript: {
