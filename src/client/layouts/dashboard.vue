@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-white">
+  <div class="neo-workspace flex min-h-screen flex-col">
     <header class="sticky top-0 z-50 flex h-14 items-center justify-between border-b-2 border-black bg-black px-4 text-white">
       <div class="flex items-center gap-4">
         <NuxtLink to="/" class="font-mono text-small font-bold uppercase hover:text-yellow transition-all duration-fast ease-linear">
@@ -14,9 +14,9 @@
       </div>
     </header>
 
-    <div class="flex flex-1">
+    <div class="flex flex-1 flex-col md:flex-row">
       <TheSidebar type="dashboard" />
-      <main class="flex-1 p-4 md:p-6">
+      <main class="neo-workspace-main min-w-0 flex-1 p-4 md:p-6">
         <slot />
       </main>
     </div>

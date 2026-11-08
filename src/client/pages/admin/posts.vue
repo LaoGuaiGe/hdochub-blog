@@ -38,7 +38,7 @@ const statusTabs = [
   { label: '全部', value: 'ALL' },
   { label: '已发布', value: 'PUBLISHED' },
   { label: '草稿', value: 'DRAFT' },
-  { label: '已下架', value: 'OFFLINE' }
+  { label: '已下架', value: 'ARCHIVED' }
 ]
 
 function changeTab(tab: 'ALL' | ArticleStatus) {
@@ -107,7 +107,7 @@ useHead({ title: '文章管理 - hdochub admin' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">文章管理 / 全站文章</h1>
     </div>
@@ -150,7 +150,7 @@ useHead({ title: '文章管理 - hdochub admin' })
         <div class="flex items-center justify-end gap-2">
           <NuxtLink :to="`/dashboard/editor?slug=${row.slug}`" class="btn-text !text-tiny">编辑</NuxtLink>
           <button v-if="row.status === 'PUBLISHED'" class="btn-text !text-tiny" @click="handleOffline(row)">下架</button>
-          <button v-else-if="row.status === 'OFFLINE'" class="btn-text !text-tiny" @click="handleRestore(row)">恢复</button>
+          <button v-else-if="row.status === 'ARCHIVED'" class="btn-text !text-tiny" @click="handleRestore(row)">恢复</button>
           <button class="btn-text !text-tiny !text-red" @click="handleDelete(row)">删除</button>
         </div>
       </template>

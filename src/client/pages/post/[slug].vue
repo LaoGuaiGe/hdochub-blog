@@ -40,7 +40,8 @@ const { data: adjacent } = await useAsyncData(
 const prevArticle = computed(() => adjacent.value?.prev || null)
 const nextArticle = computed(() => adjacent.value?.next || null)
 
-const { html, toc } = computed(() => renderMarkdown(article.value!.content)).value
+const rendered = computed(() => renderMarkdown(article.value!.content))
+const toc = computed(() => rendered.value.toc)
 
 const wordCount = computed(() => countWords(article.value!.content))
 const readMinutes = computed(() => readTime(wordCount.value))
@@ -79,7 +80,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <div v-if="article" class="container-list py-6">
+  <div v-if="article" class="neo-page neo-reading container-list py-6">
     <!-- 面包屑 -->
     <nav class="mb-6 flex items-center gap-2 font-mono text-tiny">
       <NuxtLink to="/" class="border-b-2 border-transparent hover:border-black hover:bg-black hover:text-white px-1 transition-all duration-fast ease-linear">首页</NuxtLink>
@@ -89,11 +90,11 @@ useHead(() => ({
       <span class="text-ink-700">{{ article.title }}</span>
     </nav>
 
-    <div class="flex flex-col lg:flex-row gap-6">
+    <div class="reading-layout">
       <!-- 主内容 -->
-      <div class="flex-1 min-w-0 lg:max-w-content">
+      <div class="reading-main min-w-0">
         <!-- 文章头部 -->
-        <div class="border-2 border-black bg-white">
+        <div class="reading-masthead">
           <!-- 封面图 -->
           <img
             v-if="article.coverImage"
@@ -103,7 +104,7 @@ useHead(() => ({
             style="max-height: 400px;"
           >
 
-          <div class="p-6">
+          <div class="reading-masthead-inner">
             <div class="mb-4 flex items-center gap-2">
               <NuxtLink :to="`/category/${article.category.slug}`" class="tag-category">
                 {{ article.category.name }}
@@ -141,9 +142,9 @@ useHead(() => ({
         </div>
 
         <!-- 正文 -->
-        <article class="mt-6 border-2 border-black bg-white">
-          <p class="border-b-2 border-black bg-cyan px-4 py-2 font-mono text-small font-bold uppercase text-black">正文 CONTENT</p>
-          <div class="p-6">
+        <article class="reading-paper">
+          <div class="reading-paper-label"><span>THE NOTE / 正文</span><span>{{ readMinutes }} MIN READ</span></div>
+          <div class="reading-masthead-inner">
             <MarkdownRenderer :content="article.content" />
           </div>
         </article>
@@ -215,9 +216,9 @@ useHead(() => ({
       </div>
 
       <!-- TOC 侧边栏 -->
-      <aside class="hidden lg:block w-52 shrink-0">
+      <aside class="reading-rail">
         <div class="sticky top-20">
-          <ArticleToc :items="toc" />
+          <div class="reading-rail-note"><span>READING ROOM</span><strong>慢慢读，<br>慢慢想。</strong><p>{{ article.category.name }} / {{ wordCount }} 字</p></div><ArticleToc :items="toc" /><a href="#" class="reading-back-top">↑ 回到开头</a>
         </div>
       </aside>
     </div>

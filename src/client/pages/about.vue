@@ -17,7 +17,7 @@ useHead({ title: '关于 - hdochub' })
 </script>
 
 <template>
-  <div class="container-list py-6">
+  <div class="neo-page neo-directory container-list py-6">
     <div class="mx-auto max-w-content">
       <div class="border-2 border-black bg-white p-6 md:p-8">
         <article class="prose-brutal" v-html="html" />

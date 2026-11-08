@@ -8,7 +8,7 @@ useHead({ title: '分类 - hdochub' })
 </script>
 
 <template>
-  <div class="container-list py-6">
+  <div class="neo-page neo-directory container-list py-6">
     <div class="border-2 border-black bg-white p-6 mb-6">
       <h1 class="font-mono text-h2 font-bold uppercase">CATEGORIES / 分类</h1>
     </div>

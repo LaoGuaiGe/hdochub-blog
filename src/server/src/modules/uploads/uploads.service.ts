@@ -90,8 +90,8 @@ export class UploadsService {
     }
 
     // 生成访问 URL
-    const siteUrl = this.configService.get<string>('site.url') || '';
-    const fileUrl = `${siteUrl}/uploads/${relativePath}`;
+
+    const fileUrl = `/uploads/${relativePath}`;
 
     // 获取图片尺寸（简化：不解析，返回 null）
     const width = null;

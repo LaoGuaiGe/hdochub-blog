@@ -128,7 +128,7 @@ export const statusLabel: Record<string, string> = {
   DELETED: '已删除',
   PENDING: '待审核',
   APPROVED: '已通过',
-  NORMAL: '正常',
+  ACTIVE: '正常',
   BANNED: '封禁'
 }
 

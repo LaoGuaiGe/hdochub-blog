@@ -21,6 +21,10 @@ const emit = defineEmits<{
 const { success, error: errorToast } = useToast()
 const { confirm } = useConfirm()
 
+function countComments(items: Comment[]): number {
+  return items.reduce((total, item) => total + 1 + countComments(item.replies || item.children || []), 0)
+}
+const commentCount = computed(() => countComments(props.comments))
 const newComment = ref('')
 const submitting = ref(false)
 
@@ -83,7 +87,7 @@ async function handleDelete(comment: Comment) {
 <template>
   <div>
     <h3 class="border-b-2 border-black bg-violet px-4 py-2 font-mono text-small font-bold uppercase text-black">
-      评论 COMMENTS ({{ formatNumber(comments.length) }})
+      评论 COMMENTS ({{ formatNumber(commentCount) }})
     </h3>
     <div class="p-6">
 
@@ -118,7 +122,7 @@ async function handleDelete(comment: Comment) {
         v-for="comment in comments"
         :key="comment.id"
         :comment="comment"
-        :is-author="comment.authorId === currentUserId"
+        :current-user-id="currentUserId"
         :is-admin="isAdmin"
         @reply="handleReply"
         @delete="handleDelete"

@@ -34,7 +34,7 @@ const statusTabs = [
   { label: '全部', value: 'ALL' },
   { label: '已发布', value: 'PUBLISHED' },
   { label: '草稿', value: 'DRAFT' },
-  { label: '已下架', value: 'OFFLINE' }
+  { label: '已下架', value: 'ARCHIVED' }
 ]
 
 function changeTab(tab: 'ALL' | ArticleStatus) {
@@ -76,7 +76,7 @@ async function handleToggleStatus(article: ArticleListItem) {
       await articleApi.publish(article.id)
       success('已发布')
     } else {
-      // OFFLINE 等其他状态不能直接通过此按钮发布，需在编辑页操作
+      // ARCHIVED 等其他状态不能直接通过此按钮发布，需在编辑页操作
       errorToast('当前状态不支持直接发布，请编辑文章后发布')
       return
     }
@@ -100,7 +100,7 @@ useHead({ title: '我的文章 - hdochub' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 flex flex-wrap items-center justify-between gap-2 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">文章管理 / 我的文章</h1>
       <NuxtLink to="/dashboard/editor" class="btn-primary">+ 写文章</NuxtLink>

@@ -292,7 +292,7 @@ export class CommentsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          article: { select: { id: true, title: true } },
+          article: { select: { id: true, title: true, slug: true } },
           user: { select: { id: true, nickname: true, username: true } },
           replyToUser: { select: { id: true, nickname: true, username: true } },
         },
@@ -306,7 +306,7 @@ export class CommentsService {
         status: c.status,
         depth: c.depth,
         article: c.article
-          ? { id: Number(c.article.id), title: c.article.title }
+          ? { id: Number(c.article.id), title: c.article.title, slug: c.article.slug }
           : null,
         user: c.user
           ? { ...c.user, id: Number(c.user.id) }

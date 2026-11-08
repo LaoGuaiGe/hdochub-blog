@@ -114,7 +114,7 @@ useHead({ title: '分类管理 - hdochub admin' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 flex items-center justify-between border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">分类管理</h1>
       <button class="btn-primary" @click="openCreate">+ 新增分类</button>

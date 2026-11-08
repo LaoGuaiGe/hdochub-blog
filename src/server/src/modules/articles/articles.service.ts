@@ -592,12 +592,12 @@ export class ArticlesService {
         orderBy: { updatedAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        select: this.listSelect(),
+        select: this.adminListSelect(),
       }),
       this.prisma.article.count({ where }),
     ]);
     return paginate(
-      list.map((a) => this.toListVo(a)),
+      list.map((a) => this.toAdminListVo(a)),
       total,
       page,
       pageSize,

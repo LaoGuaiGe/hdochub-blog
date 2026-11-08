@@ -35,6 +35,7 @@ function changePage(p: number) {
 }
 
 async function handleRoleChange(user: any, role: UserRole) {
+  if (user.role === 'SUPER_ADMIN') return
   try {
     await userApi.updateRole(user.id, role)
     success('角色已更新')
@@ -101,7 +102,7 @@ useHead({ title: '用户管理 - hdochub admin' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">用户管理</h1>
     </div>
@@ -116,6 +117,7 @@ useHead({ title: '用户管理 - hdochub admin' })
           @change="page = 1"
         >
           <option value="ALL">全部</option>
+          <option value="SUPER_ADMIN">超级管理员</option>
           <option value="ADMIN">管理员</option>
           <option value="USER">用户</option>
         </select>
@@ -128,8 +130,9 @@ useHead({ title: '用户管理 - hdochub admin' })
           @change="page = 1"
         >
           <option value="ALL">全部</option>
-          <option value="NORMAL">正常</option>
+          <option value="ACTIVE">正常</option>
           <option value="BANNED">封禁</option>
+          <option value="LOCKED">锁定</option>
         </select>
       </div>
     </div>
@@ -142,7 +145,8 @@ useHead({ title: '用户管理 - hdochub admin' })
         <span class="font-mono text-tiny">{{ row.email }}</span>
       </template>
       <template #role="{ row }">
-        <span v-if="row.role === 'ADMIN'" class="badge-published">管理员</span>
+        <span v-if="row.role === 'SUPER_ADMIN'" class="badge-draft">超级管理员</span>
+        <span v-else-if="row.role === 'ADMIN'" class="badge-published">管理员</span>
         <span v-else class="badge">用户</span>
       </template>
       <template #articleCount="{ row }">{{ row.articleCount || 0 }}</template>
@@ -152,23 +156,24 @@ useHead({ title: '用户管理 - hdochub admin' })
         <BBadge :status="row.status" />
       </template>
       <template #actions="{ row }">
-        <div class="flex items-center justify-end gap-2">
+        <span v-if="row.role === 'SUPER_ADMIN'" class="font-mono text-tiny text-ink-500">受保护账号</span>
+        <div v-else class="flex items-center justify-end gap-2">
           <button
-            v-if="row.role !== 'ADMIN'"
+            v-if="row.role === 'USER'"
             class="btn-text !text-tiny"
             @click="handleRoleChange(row, 'ADMIN')"
           >
             升级管理员
           </button>
           <button
-            v-else
+            v-else-if="row.role === 'ADMIN'"
             class="btn-text !text-tiny"
             @click="handleRoleChange(row, 'USER')"
           >
             降级
           </button>
-          <button v-if="row.status === 'NORMAL'" class="btn-text !text-tiny !text-red" @click="handleBan(row)">封禁</button>
-          <button v-else class="btn-text !text-tiny" @click="handleUnban(row)">解封</button>
+          <button v-if="row.status === 'ACTIVE'" class="btn-text !text-tiny !text-red" @click="handleBan(row)">封禁</button>
+          <button v-else-if="row.status === 'BANNED' || row.status === 'LOCKED'" class="btn-text !text-tiny" @click="handleUnban(row)">{{ row.status === 'LOCKED' ? '解锁' : '解封' }}</button>
           <button class="btn-text !text-tiny" @click="handleResetPassword(row)">重置密码</button>
         </div>
       </template>

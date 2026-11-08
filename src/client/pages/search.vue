@@ -37,7 +37,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <div class="container-list py-6">
+  <div class="neo-page neo-directory container-list py-6">
     <!-- 搜索框区 -->
     <div class="border-2 border-black bg-white p-4 mb-6">
       <BSearchBar

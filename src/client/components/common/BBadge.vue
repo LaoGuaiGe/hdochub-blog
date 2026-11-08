@@ -2,14 +2,14 @@
 import type { ArticleStatus, CommentStatus, UserStatus, UserRole } from '~/types'
 
 interface Props {
-  status?: ArticleStatus | CommentStatus | UserStatus
+  status?: ArticleStatus | CommentStatus | UserStatus | 'NORMAL' | 'APPROVED' | 'OFFLINE'
   type?: string
   text?: string
 }
 
 const props = defineProps<Props>()
 
-const { label, cls } = computed(() => {
+const badge = computed(() => {
   if (props.text && props.type) {
     const map: Record<string, string> = {
       published: 'badge-published',
@@ -26,12 +26,18 @@ const { label, cls } = computed(() => {
   const status = props.status
   switch (status) {
     case 'PUBLISHED':
-    case 'APPROVED':
-    case 'NORMAL':
       return { label: '已发布', cls: 'badge-published' }
+    case 'APPROVED':
+      return { label: '已通过', cls: 'badge-approved' }
+    case 'ACTIVE':
+    case 'NORMAL':
+      return { label: '正常', cls: 'badge-published' }
+    case 'LOCKED':
+      return { label: '已锁定', cls: 'badge-danger' }
     case 'DRAFT':
       return { label: '草稿', cls: 'badge-draft' }
     case 'OFFLINE':
+    case 'ARCHIVED':
       return { label: '已下架', cls: 'badge-offline' }
     case 'PENDING':
       return { label: '待审核', cls: 'badge-pending' }
@@ -42,9 +48,9 @@ const { label, cls } = computed(() => {
     default:
       return { label: props.text || '-', cls: 'badge' }
   }
-}).value
+})
 </script>
 
 <template>
-  <span :class="cls">{{ label }}</span>
+  <span :class="badge.cls">{{ badge.label }}</span>
 </template>

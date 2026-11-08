@@ -25,15 +25,28 @@ const { data, pending, refresh } = await useAsyncData(
   { watch: [page, statusFilter] }
 )
 
-const list = computed(() => data.value?.list || [])
+const list = computed(() => (data.value?.list || []).map((comment: any) => ({
+  ...comment,
+  authorId: comment.user?.id ?? comment.authorId,
+  authorName: comment.user?.nickname || comment.user?.username || comment.authorName || '已注销用户',
+  articleTitle: comment.article?.title || comment.articleTitle || '文章不可用',
+  articleSlug: comment.article?.slug || comment.articleSlug,
+  replyToName: comment.replyToUser?.nickname || comment.replyToUser?.username || comment.replyTo?.name || '—',
+})))
 const totalPages = computed(() => data.value?.pagination.totalPages || 0)
+
+function articleHref(comment: any): string {
+  return comment.articleSlug
+    ? `/post/${comment.articleSlug}`
+    : `/search?q=${encodeURIComponent(comment.articleTitle)}`
+}
 
 const pendingCount = ref(0)
 
 const statusTabs = [
   { label: '全部', value: 'ALL' },
   { label: '待审核', value: 'PENDING' },
-  { label: '已通过', value: 'APPROVED' },
+  { label: '已通过', value: 'PUBLISHED' },
   { label: '已删除', value: 'DELETED' }
 ]
 
@@ -74,6 +87,10 @@ async function handleDelete(comment: any) {
 }
 
 async function handleBanUser(comment: any) {
+  if (!comment.authorId) {
+    errorToast('无法获取评论者信息')
+    return
+  }
   const ok = await confirm({
     title: '屏蔽评论者',
     message: `确认屏蔽用户「${comment.authorName}」？屏蔽后该用户无法登录和发言。`,
@@ -104,7 +121,7 @@ useHead({ title: '评论管理 - hdochub admin' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">评论管理</h1>
     </div>
@@ -128,7 +145,7 @@ useHead({ title: '评论管理 - hdochub admin' })
 
     <BTable :columns="columns" :data="list" :loading="pending">
       <template #articleTitle="{ row }">
-        <NuxtLink :to="`/post/${row.articleSlug}`" class="font-mono text-tiny border-b-2 border-transparent hover:border-black hover:bg-black hover:text-white px-1 transition-all duration-fast ease-linear truncate block max-w-[140px]">
+        <NuxtLink :to="articleHref(row)" class="font-mono text-tiny border-b-2 border-transparent hover:border-black hover:bg-black hover:text-white px-1 transition-all duration-fast ease-linear truncate block max-w-[140px]">
           {{ row.articleTitle }}
         </NuxtLink>
       </template>
@@ -136,7 +153,7 @@ useHead({ title: '评论管理 - hdochub admin' })
         <span class="font-mono text-tiny truncate block max-w-[180px]">{{ row.content }}</span>
       </template>
       <template #replyTo="{ row }">
-        <span class="font-mono text-tiny">{{ row.replyTo?.name || '—' }}</span>
+        <span class="font-mono text-tiny">{{ row.replyToName }}</span>
       </template>
       <template #createdAt="{ row }">
         <span class="font-mono text-tiny">{{ formatDate(row.createdAt) }}</span>
@@ -147,7 +164,7 @@ useHead({ title: '评论管理 - hdochub admin' })
       <template #actions="{ row }">
         <div class="flex items-center justify-end gap-2">
           <button v-if="row.status === 'PENDING'" class="btn-text !text-tiny" @click="handleApprove(row)">通过</button>
-          <NuxtLink :to="`/post/${row.articleSlug}`" class="btn-text !text-tiny">查看</NuxtLink>
+          <NuxtLink :to="articleHref(row)" class="btn-text !text-tiny">查看</NuxtLink>
           <button class="btn-text !text-tiny !text-red" @click="handleDelete(row)">删除</button>
           <button class="btn-text !text-tiny !text-red" @click="handleBanUser(row)">屏蔽者</button>
         </div>

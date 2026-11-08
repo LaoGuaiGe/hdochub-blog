@@ -46,7 +46,7 @@ async function bootstrap() {
       'rss.xml',
       'sitemap.xml',
       'robots.txt',
-      'uploads',
+
     ],
   });
 

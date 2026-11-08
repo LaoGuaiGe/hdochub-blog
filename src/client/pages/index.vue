@@ -93,21 +93,13 @@ useHead({
 </script>
 
 <template>
-  <div>
-    <!-- Hero 标题区（像素字体，Neo-Brutalism 点缀） -->
-    <div class="border-b-2 border-black bg-white">
-      <div class="container-list py-8">
-        <h1 class="font-pixel text-h2 font-bold uppercase text-black">{{ brandName }}</h1>
-        <p v-if="brandSuffix" class="mt-3 font-mono text-h4 font-bold text-black">{{ brandSuffix }}</p>
-        <p class="mt-1 font-mono text-body-ui text-ink-700">面向工程师的个人技术博客 · 记录问题、方案与观点</p>
-      </div>
-    </div>
-
+  <div class="neo-home">
+    <section class="neo-hero"><div class="container-list neo-hero-grid"><div><span class="neo-eyebrow">独立书写 / 持续探索 / BUILD IN PUBLIC</span><h1 class="neo-title">把问题拆开。<br>把<span>想法写下。</span></h1><p class="neo-intro">这里是 {{ brandName }} 的技术自留地。<br>记录踩过的坑、跑通的方案，还有代码之外的思考。</p><div class="neo-actions"><a href="#articles" class="btn-primary">开始阅读 ↘</a><NuxtLink to="/about" class="neo-text-link">认识博主 ↗</NuxtLink></div></div><div class="neo-art" aria-hidden="true"><span class="neo-art-label">NOTES FROM THE DEV DESK</span><div class="neo-code"><span>01 / 思考进行中</span><strong>&lt;hello<br>&nbsp; world /&gt;</strong><p>遇到问题 → 找到答案 → 分享出来</p></div><span class="neo-sticker">保持好奇<br>KEEP CURIOUS ↗</span><span class="neo-star">✳</span></div></div></section><div class="neo-ticker"><span>CODE. WRITE. REPEAT.</span><span>技术 · 教程 · 观点 · 随笔</span><span>保持好奇，持续构建 ↗</span></div>
     <!-- 排序工具栏 -->
-    <div class="border-b-2 border-black bg-white">
+    <div id="articles" class="neo-toolbar border-b-2 border-black">
       <div class="container-list py-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-0">
+          <div class="flex flex-wrap items-center gap-0"><h2 class="neo-section-title">最新笔记 <span>{{ total }} 篇</span></h2>
             <button
               class="border-2 border-black px-3 py-1 font-mono text-small font-bold uppercase transition-all duration-fast ease-linear"
               :class="sort === 'latest' ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'"
@@ -149,12 +141,10 @@ useHead({
             </div>
           </div>
           <div v-else-if="articles.length === 0">
-            <BEmpty title="NO RESULTS" description="暂无文章">
-              <NuxtLink to="/" class="btn-secondary">返回首页</NuxtLink>
-            </BEmpty>
+            <div class="neo-empty"><span class="neo-empty-index">NO. 001 / 下一篇，从这里开始</span><div class="neo-empty-symbol">[ _ ]</div><h3>好内容，正在酝酿。</h3><p>每一次解决问题，都值得留下记录。<br>第一篇笔记，留给下一个灵感。</p><NuxtLink to="/dashboard/editor" class="btn-primary">写下第一篇 ↗</NuxtLink></div>
           </div>
           <div v-else>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="editorial-feed">
               <ArticleCard
                 v-for="article in articles"
                 :key="article.id"
@@ -168,14 +158,14 @@ useHead({
         </div>
 
         <!-- 侧边栏 -->
-        <aside class="w-full lg:w-60 lg:shrink-0 space-y-6">
-          <!-- 搜索框 -->
+        <aside class="w-full lg:w-72 lg:shrink-0 space-y-6">
+<div class="neo-about"><span class="neo-eyebrow">HELLO, INTERNET!</span><h3>一个工程师的<br>开放笔记本。 ↗</h3><p>不止记录答案，也记录寻找答案的过程。</p><NuxtLink to="/about" class="neo-text-link">更多关于我 →</NuxtLink></div><!-- 搜索框 -->
           <div>
             <BSearchBar placeholder="搜索文章..." @search="(q) => navigateTo(`/search?q=${encodeURIComponent(q)}`)" />
           </div>
 
           <!-- 分类列表 -->
-          <div v-if="categories && categories.length" class="border-2 border-black">
+          <div v-if="categories && categories.length" class="neo-panel border-2 border-black">
             <p class="border-b-2 border-black bg-cyan px-4 py-2 font-mono text-small font-bold uppercase text-black">
               分类 CATEGORIES
             </p>
@@ -197,7 +187,7 @@ useHead({
           </div>
 
           <!-- 热门标签云 -->
-          <div v-if="tags && tags.length" class="border-2 border-black">
+          <div v-if="tags && tags.length" class="neo-panel border-2 border-black">
             <p class="border-b-2 border-black bg-pink px-4 py-2 font-mono text-small font-bold uppercase text-black">
               标签 TAGS
             </p>
@@ -214,7 +204,7 @@ useHead({
           </div>
 
           <!-- 热门文章 -->
-          <div v-if="hotArticles && hotArticles.list.length" class="border-2 border-black">
+          <div v-if="hotArticles && hotArticles.list.length" class="neo-panel border-2 border-black">
             <p class="border-b-2 border-black bg-violet px-4 py-2 font-mono text-small font-bold uppercase text-black">
               热门 TOP5
             </p>

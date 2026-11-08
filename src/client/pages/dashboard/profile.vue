@@ -123,7 +123,7 @@ useHead({ title: '个人资料 - hdochub' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">个人资料</h1>
     </div>

@@ -53,11 +53,11 @@ async function handleLogout() {
 </script>
 
 <template>
-  <header class="sticky top-0 z-[100] border-b-4 border-black bg-white">
-    <div class="container-list flex h-16 items-center justify-between gap-4">
+  <header class="neo-header sticky top-0 z-[100] border-b-4 border-black bg-white">
+    <div class="container-list flex h-20 items-center justify-between gap-4">
       <!-- 左侧：站点标题 -->
       <div class="flex items-center gap-6">
-        <NuxtLink to="/" class="font-pixel text-h5 font-bold uppercase tracking-wide border-2 border-transparent px-2 py-1 hover:bg-black hover:text-white transition-all duration-fast ease-linear">
+        <NuxtLink to="/" class="neo-brand text-h5 font-bold uppercase tracking-wide border-2 border-transparent px-2 py-1 hover:bg-black hover:text-white transition-all duration-fast ease-linear">
           {{ brandName }}
         </NuxtLink>
         <!-- 桌面端导航 -->
@@ -67,7 +67,7 @@ async function handleLogout() {
             :key="item.path"
             :to="item.path"
             class="border-t-2 border-transparent px-3 py-1 font-mono text-body-ui transition-all duration-fast ease-linear"
-            :class="isActive(item.path) ? 'border-black font-bold' : 'hover:bg-black hover:text-white'"
+            :class="isActive(item.path) ? 'border-black font-bold bg-yellow' : 'hover:bg-black hover:text-white'"
           >
             {{ item.label }}
           </NuxtLink>
@@ -124,7 +124,7 @@ async function handleLogout() {
         <!-- 移动端汉堡菜单 -->
         <button
           class="md:hidden border-2 border-black bg-white px-3 py-1 font-mono text-h5 transition-all duration-fast ease-linear hover:bg-black hover:text-white"
-          @click="toggleMobileMenu"
+          aria-label="切换导航菜单" :aria-expanded="mobileMenuOpen" @click="toggleMobileMenu"
         >
           ≡
         </button>

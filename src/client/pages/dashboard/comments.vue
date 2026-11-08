@@ -56,7 +56,7 @@ useHead({ title: '我的评论 - hdochub' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">我的评论</h1>
     </div>

@@ -49,7 +49,7 @@ useHead(() => ({ title: `${category.value?.name || '分类'} - hdochub` }))
 </script>
 
 <template>
-  <div class="container-list py-6">
+  <div class="neo-page neo-directory container-list py-6">
     <!-- 分类标题 -->
     <div class="border-2 border-black bg-white p-6 mb-6">
       <h1 class="font-mono text-h2 font-bold uppercase">{{ category?.name || '分类' }}</h1>

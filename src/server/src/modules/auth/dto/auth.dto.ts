@@ -16,7 +16,7 @@ export class RegisterDto {
   @IsString()
   @MinLength(3, { message: '用户名长度需在 3-20 字符之间' })
   @MaxLength(20, { message: '用户名长度需在 3-20 字符之间' })
-  @Matches(/^[a-zA-Z0-9_]+$/, { message: '用户名仅允许字母、数字、下划线' })
+  @Matches(/^[\p{Script=Han}a-zA-Z0-9_]+$/u, { message: '用户名仅允许中文、字母、数字、下划线' })
   username: string;
 
   @IsEmail({}, { message: '邮箱格式不正确' })
@@ -79,7 +79,7 @@ export class CreateAdminDto {
   @IsString()
   @MinLength(3)
   @MaxLength(20)
-  @Matches(/^[a-zA-Z0-9_]+$/)
+  @Matches(/^[\p{Script=Han}a-zA-Z0-9_]+$/u)
   username: string;
 
   @IsEmail()

@@ -30,7 +30,7 @@ useHead({ title: '用户概览 - hdochub' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">DASHBOARD / 我的概览</h1>
     </div>

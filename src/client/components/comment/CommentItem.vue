@@ -6,6 +6,7 @@ import { renderMarkdownHtml } from '~/utils/markdown'
 interface Props {
   comment: Comment
   isAuthor?: boolean
+  currentUserId?: number
   isAdmin?: boolean
 }
 
@@ -16,6 +17,10 @@ const emit = defineEmits<{
   delete: [comment: Comment]
 }>()
 
+const replies = computed(() => props.comment.replies || props.comment.children || [])
+const authorName = computed(() => props.comment.user?.nickname || props.comment.user?.username || props.comment.authorName)
+const replyToName = computed(() => props.comment.replyToUser?.nickname || props.comment.replyToUser?.username || props.comment.replyTo?.name)
+const ownsComment = computed(() => props.currentUserId != null ? (props.comment.user?.id ?? props.comment.authorId) === props.currentUserId : !!props.isAuthor)
 const replyMode = ref(false)
 const replyContent = ref('')
 
@@ -34,18 +39,18 @@ function submitReply() {
   cancelReply()
 }
 
-const contentHtml = computed(() => renderMarkdownHtml(props.comment.content || ''))
+const contentHtml = computed(() => renderMarkdownHtml(props.comment.content || '', false))
 </script>
 
 <template>
   <div class="border-2 border-black bg-white">
     <div class="flex items-start gap-3 p-4">
-      <BAvatar :src="comment.authorAvatar" :name="comment.authorName" :size="32" />
+      <BAvatar :src="comment.user?.avatar || comment.authorAvatar" :name="authorName" :size="32" />
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 mb-1 flex-wrap">
-          <span class="font-mono text-small font-bold">{{ comment.authorName }}</span>
-          <span v-if="comment.replyTo" class="font-mono text-tiny text-ink-500">
-            回复 @{{ comment.replyTo.name }}
+          <span class="font-mono text-small font-bold">{{ authorName }}</span>
+          <span v-if="replyToName" class="font-mono text-tiny text-ink-500">
+            回复 @{{ replyToName }}
           </span>
           <span class="font-mono text-tiny text-ink-500">· {{ timeAgo(comment.createdAt) }}</span>
         </div>
@@ -59,7 +64,7 @@ const contentHtml = computed(() => renderMarkdownHtml(props.comment.content || '
             回复
           </button>
           <button
-            v-if="isAuthor || isAdmin"
+            v-if="ownsComment || isAdmin"
             class="font-mono text-tiny font-bold uppercase text-red border-b-2 border-transparent hover:border-red transition-all duration-fast ease-linear"
             @click="emit('delete', comment)"
           >
@@ -83,13 +88,13 @@ const contentHtml = computed(() => renderMarkdownHtml(props.comment.content || '
     </div>
 
     <!-- 子回复 -->
-    <div v-if="comment.children && comment.children.length" class="border-t-2 border-black bg-ink-100 p-2">
+    <div v-if="replies.length" class="border-t-2 border-black bg-ink-100 p-2">
       <div class="border-l-4 border-black pl-2 space-y-2">
         <CommentItem
-          v-for="child in comment.children"
+          v-for="child in replies"
           :key="child.id"
           :comment="child"
-          :is-author="isAuthor"
+          :current-user-id="currentUserId"
           :is-admin="isAdmin"
           @reply="emit('reply', $event)"
           @delete="emit('delete', $event)"

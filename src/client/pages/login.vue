@@ -58,7 +58,7 @@ useHead({ title: '登录 - hdochub' })
 </script>
 
 <template>
-  <div class="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
+  <div class="neo-page neo-auth flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
     <div class="w-full max-w-[400px]">
       <div class="border-2 border-black bg-white">
         <!-- 标题栏 -->

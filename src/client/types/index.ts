@@ -3,9 +3,9 @@
 // =========================================================
 
 export type UserRole = 'GUEST' | 'USER' | 'ADMIN' | 'SUPER_ADMIN'
-export type ArticleStatus = 'PUBLISHED' | 'DRAFT' | 'OFFLINE' | 'DELETED'
-export type CommentStatus = 'PENDING' | 'APPROVED' | 'DELETED'
-export type UserStatus = 'NORMAL' | 'BANNED'
+export type ArticleStatus = 'PUBLISHED' | 'DRAFT' | 'ARCHIVED' | 'DELETED'
+export type CommentStatus = 'PENDING' | 'PUBLISHED' | 'DELETED'
+export type UserStatus = 'ACTIVE' | 'BANNED' | 'LOCKED'
 
 // 统一响应格式
 export interface ApiResponse<T = unknown> {
@@ -98,6 +98,9 @@ export interface Article {
 }
 
 export interface ArticleListItem {
+  summary?: string
+  category?: Category
+  author?: Pick<User, 'id' | 'username' | 'nickname' | 'avatar'>
   id: number
   title: string
   slug: string
@@ -129,6 +132,9 @@ export interface ArticleListQuery extends PaginationQuery {
 
 // 评论
 export interface Comment {
+  user?: Pick<User, 'id' | 'username' | 'nickname' | 'avatar'> | null
+  replyToUser?: Pick<User, 'id' | 'username' | 'nickname'> | null
+  replies?: Comment[]
   id: number
   articleId: number
   articleTitle?: string

@@ -19,6 +19,24 @@ import type {
   LikeInfo
 } from '~/types'
 
+// Adapt the wire format once so list, editor and management pages agree.
+function normalizeArticle<T extends Article | ArticleListItem>(item: T): T {
+  return { ...item, excerpt: (item as Article & { summary?: string }).summary ?? item.excerpt ?? '',
+    categoryId: item.category?.id, categoryName: item.category?.name,
+    authorId: item.author?.id, authorName: item.author?.nickname || item.author?.username,
+    authorAvatar: item.author?.avatar }
+}
+function normalizeArticles(result: Paginated<ArticleListItem>) {
+  return { ...result, list: result.list.map(normalizeArticle) }
+}
+function articleQuery(query: ArticleListQuery) {
+  const { category, tag, ...rest } = query
+  return { ...rest, categorySlug: category, tagSlug: tag }
+}
+function articlePayload(payload: Partial<ArticlePayload>) {
+  const { excerpt, ...rest } = payload
+  return { ...rest, ...(excerpt !== undefined ? { summary: excerpt } : {}) }
+}
 // ========== 认证 ==========
 export const authApi = {
   login: (payload: LoginPayload) => post<AuthResult>('/auth/login', payload),
@@ -29,13 +47,13 @@ export const authApi = {
 
 // ========== 文章 ==========
 export const articleApi = {
-  list: (query: ArticleListQuery) => get<Paginated<ArticleListItem>>('/articles', query),
-  detail: (slug: string) => get<Article>(`/articles/${slug}`),
-  create: (payload: ArticlePayload) => post<Article>('/articles', payload),
-  update: (id: number, payload: Partial<ArticlePayload>) => put<Article>(`/articles/${id}`, payload),
+  list: (query: ArticleListQuery) => get<Paginated<ArticleListItem>>('/articles', articleQuery(query)).then(normalizeArticles),
+  detail: (slug: string) => get<Article>(`/articles/${slug}`).then(normalizeArticle),
+  create: (payload: ArticlePayload) => post<Article>('/articles', articlePayload(payload)).then(normalizeArticle),
+  update: (id: number, payload: Partial<ArticlePayload>) => put<Article>(`/articles/${id}`, articlePayload(payload)).then(normalizeArticle),
   delete: (id: number) => del(`/articles/${id}`),
   // BUG-004: 我的文章列表路径 /articles/mine -> /dashboard/articles
-  mine: (query: ArticleListQuery) => get<Paginated<ArticleListItem>>('/dashboard/articles', query),
+  mine: (query: ArticleListQuery) => get<Paginated<ArticleListItem>>('/dashboard/articles', query).then(normalizeArticles),
   // BUG-005: 下架/恢复文章路径修正（管理员接口）
   offline: (id: number) => put(`/admin/articles/${id}/archive`),
   restore: (id: number) => put(`/admin/articles/${id}/restore`),
@@ -151,7 +169,7 @@ export const uploadApi = {
   image: (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-    return post<{ url: string }>('/uploads', formData)
+    return post<{ url: string }>('/uploads', formData).then(result => ({ ...result, url: result.url.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1):4000(\/uploads\/)/i, '$1') }))
   }
 }
 

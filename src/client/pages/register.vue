@@ -28,8 +28,8 @@ const strength = computed(() => passwordStrength(form.password))
 function validateUsername(): boolean {
   if (!form.username) {
     errors.username = '请输入用户名'
-  } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.username)) {
-    errors.username = '3-20字符，仅允许字母、数字、下划线'
+  } else if (!/^[\p{Script=Han}a-zA-Z0-9_]{3,20}$/u.test(form.username)) {
+    errors.username = '3-20字符，支持中文、字母、数字、下划线'
   } else {
     errors.username = ''
   }
@@ -98,7 +98,7 @@ useHead({ title: '注册 - hdochub' })
 </script>
 
 <template>
-  <div class="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
+  <div class="neo-page neo-auth flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
     <div class="w-full max-w-[400px]">
       <div class="border-2 border-black bg-white">
         <!-- 标题栏 -->
@@ -113,7 +113,7 @@ useHead({ title: '注册 - hdochub' })
             required
             placeholder="3-20字符，字母数字下划线"
             :error="errors.username"
-            help="3-20字符，仅允许字母、数字、下划线"
+            help="3-20字符，支持中文、字母、数字、下划线"
             autocomplete="username"
             @blur="validateUsername"
           />

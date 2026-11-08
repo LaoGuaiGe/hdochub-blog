@@ -23,7 +23,7 @@ const wordCount = computed(() => form.value ? countWords(form.value.content) : 0
 </script>
 
 <template>
-  <div class="container-list py-6">
+  <div class="neo-page neo-management container-list py-6">
     <div v-if="!form" class="border-2 border-black bg-white p-12">
       <BEmpty title="NO CONTENT" description="没有预览内容" />
     </div>

@@ -7,7 +7,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { html, toc } = computed(() => renderMarkdown(props.content)).value
+const rendered = computed(() => renderMarkdown(props.content))
+const html = computed(() => rendered.value.html)
+const toc = computed(() => rendered.value.toc)
 
 // 暴露 toc 给父组件
 defineExpose({ toc })

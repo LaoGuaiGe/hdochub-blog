@@ -116,7 +116,7 @@ useHead({ title: '标签管理 - hdochub admin' })
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <div class="mb-6 border-b-2 border-black pb-3">
       <h1 class="font-mono text-h2 font-bold uppercase">标签管理</h1>
     </div>

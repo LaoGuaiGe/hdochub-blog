@@ -188,7 +188,7 @@ useHead({ title: isEdit.value ? '编辑文章 - hdochub' : '写文章 - hdochub'
 </script>
 
 <template>
-  <div>
+  <div class="neo-page neo-management">
     <!-- 顶部操作栏 -->
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2 border-2 border-black bg-white p-3">
       <div class="flex items-center gap-2">
